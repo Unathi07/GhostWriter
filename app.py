@@ -18,11 +18,36 @@ mode = st.radio(
 
 if mode == "Producing":
     st.subheader('Make the sounds in your head ideas')
+    options = st.multiselect(
+        "What instrument(s) are you using?",
+        ["Guitar", "Keys", "Bass Guitar", "Drums","Strings"],
+        default=["Keys", "Bass Guitar", "Drums"],
+    )
 
-    st.tabs(["Chords","Progressions","Suggestions"])
+    st.write("You selected:", options)
+    tab1, tab2, tab3 = st.tabs(["Chords", "Progression", "Suggestions"])
+
+    with tab1:
+        st.header("Chords")
+    with tab2:
+        st.header("Progression")
+    with tab3:
+        st.header("Suggestions")
+
+
 elif mode == "Song Writing":
     st.subheader('The pen behind your sound')
-    st.tabs(["Lyrics","Brainstorm","Inspiration"])
+    tab1, tab2, tab3 = st.tabs(["Lyrics", "Brainstorm", "Inspiration"])
+
+    with tab1:
+        st.header("Lyrics")
+    with tab2:
+        st.header("Brainstorm")
+    with tab3:
+        st.header("Inspiration")
+
+
+
 
 
 
