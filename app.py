@@ -52,6 +52,12 @@ if mode == "Producing":
             "Minor 9th": "min9",
             "Add9": "add9",
         }
+        #Make chord for music21
+        chord_map = type_map.get(chord_type)
+        full_chord = root_note + chord_map
+        chord = harmony.ChordSymbol(full_chord)
+        notes = [p.name for p in chord.pitches]
+        st.write("Notes:", notes)
 
         selected_chord = root_note + " " + chord_type
         st.write("Chord:", selected_chord)
