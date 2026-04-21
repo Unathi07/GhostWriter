@@ -1,5 +1,6 @@
 #Import libraries
 import streamlit as st
+from music21 import harmony
 
 #Title of the App
 st.title('GhostWriter')
@@ -15,7 +16,7 @@ mode = st.radio(
     ],
     index=None,
 )
-
+#For producers
 if mode == "Producing":
     st.subheader('Make the sounds in your head ideas')
     options = st.multiselect(
@@ -23,7 +24,7 @@ if mode == "Producing":
         ["Guitar", "Keys", "Bass Guitar", "Drums","Strings"],
         default=["Keys", "Bass Guitar", "Drums"],
     )
-
+    #Tab options
     st.write("You selected:", options)
     tab1, tab2, tab3 = st.tabs(["Chords", "Progression", "Suggestions"])
 
@@ -36,8 +37,22 @@ if mode == "Producing":
         st.write("You selected:", root_note)
         chord_type=st.selectbox(
             "Select a chord type",
-            ("Major","Minor","7th","Major 7th","Minor 7th","Suspended","Diminished"),
+            ("Major","Minor","7th","Major 7th","Minor 7th","Suspended","Diminished","9th","Major 9th","Minor 9th","Minor 9th","Add9"),
         )
+        type_map = {
+            "Major": "",
+            "Minor": "m",
+            "7th": "7",
+            "Major 7th": "maj7",
+            "Minor 7th": "min7",
+            "Suspended": "sus",
+            "Diminished": "dim",
+            "9th": "9",
+            "Major 9th": "maj9",
+            "Minor 9th": "min9",
+            "Add9": "add9",
+        }
+
         selected_chord = root_note + " " + chord_type
         st.write("Chord:", selected_chord)
     with tab2:
@@ -45,7 +60,7 @@ if mode == "Producing":
     with tab3:
         st.header("Suggestions")
 
-
+#For song-writers
 elif mode == "Song Writing":
     st.subheader('The pen behind your sound')
     tab1, tab2, tab3 = st.tabs(["Lyrics", "Brainstorm", "Inspiration"])
