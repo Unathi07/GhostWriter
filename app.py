@@ -57,10 +57,11 @@ if mode == "Producing":
         full_chord = root_note + chord_map
         chord = harmony.ChordSymbol(full_chord)
         notes = [p.name for p in chord.pitches]
-        st.write("Notes:", notes)
+        revised_notes = [item.replace("-","b") for item in notes]
 
         selected_chord = root_note + " " + chord_type
         st.write("Chord:", selected_chord)
+        st.write("Notes:", revised_notes)
     with tab2:
         st.header("Progression")
     with tab3:
