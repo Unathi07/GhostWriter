@@ -66,7 +66,7 @@ if mode == "Producing":
         html = f"""
         <div id="piano" style="display: flex; position: relative; height: 150px; margin: 20px;">
         </div>
-
+        
         <script>
             const activeNotes = {revised_notes};
             const whiteKeys = ["C", "D", "E", "F", "G", "A", "B"];
@@ -126,19 +126,35 @@ btn.innerText = "▶ Play Chord";
 btn.style.display = "block";
 document.getElementById("piano").after(btn);
 
-btn.addEventListener("click", () => {{
-    const ctx = new AudioContext();
-    ctx.resume();
+btn.addEventListener("mousedown", () => {{
+    window.chordCtx = new AudioContext();
+    window.chordCtx.resume();
+    window.chordOscs = [];
     activeNotes.forEach(note => {{
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.frequency.value = frequencies[note];
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 1.5);
-        osc.stop(ctx.currentTime + 1.5);
+        [1, 2, 4].forEach((harmonic, i) => {{
+            const osc = window.chordCtx.createOscillator();
+            const gain = window.chordCtx.createGain();
+            osc.type = "sine";
+            osc.frequency.value = frequencies[note] * harmonic;
+            const vol = [0.5, 0.25, 0.1][i];
+            osc.connect(gain);
+            gain.connect(window.chordCtx.destination);
+            osc.start();
+            gain.gain.setValueAtTime(vol, window.chordCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.00001, window.chordCtx.currentTime + 2.5);
+            osc.stop(window.chordCtx.currentTime + 2.5);
+            window.chordOscs.push({{osc, gain}});
+        }});
     }});
+}});
+
+btn.addEventListener("mouseup", () => {{
+    if (window.chordOscs) {{
+        window.chordOscs.forEach(({{osc, gain}}) => {{
+            gain.gain.exponentialRampToValueAtTime(0.00001, window.chordCtx.currentTime + 0.3);
+            osc.stop(window.chordCtx.currentTime + 0.3);
+        }});
+    }}
 }});
         </script>
         """
