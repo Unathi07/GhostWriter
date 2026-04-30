@@ -1,4 +1,4 @@
-def render_piano(revised_notes):
+def render_piano(revised_notes, autoplay=False):
     html = f"""
             <div id="piano" style="display: flex; position: relative; height: 150px; margin: 20px;">
             </div>
