@@ -1,7 +1,7 @@
 #Import libraries
 import streamlit as st
-from music21 import harmony
 from piano import render_piano
+from chord_utils import get_chord_name
 
 #Title of the App
 st.title('GhostWriter')
@@ -58,14 +58,7 @@ if mode == "Producing":
             ("Major","Minor","7th","Major 7th","Minor 7th","Suspended","Diminished","9th","Major 9th","Minor 9th","Minor 9th","Add9"),
             key="chord_type"
         )
-        #Make chord for music21
-        chord_map = type_map.get(chord_type)
-        full_chord = root_note + chord_map
-        chord = harmony.ChordSymbol(full_chord)
-        notes = [p.name for p in chord.pitches]
-        revised_notes = [item.replace("-","b") for item in notes]
-
-        selected_chord = root_note + " " + chord_type
+        selected_chord, revised_notes = get_chord_name(root_note, chord_type, type_map)
         st.write("Chord:", selected_chord)
         st.write("Notes:", revised_notes)
 
