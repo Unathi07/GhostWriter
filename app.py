@@ -81,8 +81,12 @@ if mode == "Producing":
              "Minor 9th", "Minor 9th", "Add9"),
             key="progression_chord_type",
         )
+        selected_chord2, revised_notes2 = get_chord_name(root_note2, chord_type2, type_map)
+        st.write("Chord:", selected_chord2)
+        st.write("Notes:", revised_notes2)
+        st.components.v1.html(render_piano(revised_notes2, autoplay=True), height=300)
+
         #Add the chord to the progression
-        selected_chord2 = root_note2 + " " + chord_type2
         if st.button("Add chord", key="add_progression_chord"):
             st.session_state.progression.append(selected_chord2)
             st.rerun()
