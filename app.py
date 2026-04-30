@@ -42,17 +42,21 @@ if mode == "Producing":
         "Minor 9th": "min9",
         "Add9": "add9",
     }
+    #A list to store the progression
+    if "progression" not in st.session_state:
+        st.session_state.progression = []
     #Information on the chords
     with tab1:
         st.header("Chords")
         root_note=st.selectbox(
             "Select a root note",
-            ("C","C#","D","D#","E","F","F#","G","G#","A","A#","B"),
+            ("C","C#","D","D#","E","F","F#","G","G#","A","A#","B"),key="root_note"
         )
         st.write("You selected:", root_note)
         chord_type=st.selectbox(
             "Select a chord type",
             ("Major","Minor","7th","Major 7th","Minor 7th","Suspended","Diminished","9th","Major 9th","Minor 9th","Minor 9th","Add9"),
+            key="chord_type"
         )
         #Make chord for music21
         chord_map = type_map.get(chord_type)
@@ -69,27 +73,61 @@ if mode == "Producing":
         st.components.v1.html(render_piano(revised_notes), height=300)
     #Formulating a chord progression
     with tab2:
+        #Note Options
         st.header("Progression")
         root_note2 = st.selectbox(
             "Select a root note",
             ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"),
+            key="progression_root_note",
         )
         st.write("You selected:", root_note2)
+        #Chord Type Selection
         chord_type2 = st.selectbox(
             "Select a chord type",
             ("Major", "Minor", "7th", "Major 7th", "Minor 7th", "Suspended", "Diminished", "9th", "Major 9th",
              "Minor 9th", "Minor 9th", "Add9"),
+            key="progression_chord_type",
         )
-        # Make chord for music21
-        chord_map2 = type_map.get(chord_type2)
-        full_chord2 = root_note2 + chord_map2
-        chord2 = harmony.ChordSymbol(full_chord2)
-        notes2 = [p.name for p in chord2.pitches]
-        revised_notes2 = [item.replace("-", "b") for item in notes2]
-
+        #Add the chord to the progression
         selected_chord2 = root_note2 + " " + chord_type2
-        st.write("Chord:", selected_chord2)
-        st.write("Notes:", revised_notes2)
+        if st.button("Add chord", key="add_progression_chord"):
+            st.session_state.progression.append(selected_chord2)
+            st.rerun()
+        #See the current progression
+        st.subheader("Current progression")
+        if st.session_state.progression:
+            progression_options = [
+                f"{index + 1}. {chord}"
+                for index, chord in enumerate(st.session_state.progression)
+            ]
+            st.write("Progression:", " -> ".join(st.session_state.progression))
+            #Remove selected chord
+            selected_to_remove = st.multiselect(
+                "Select chord(s) to remove",
+                progression_options,
+                key="progression_remove_selection",
+            )
+
+            if st.button(
+                "Remove selected chord(s)",
+                key="remove_progression_chords",
+                disabled=not selected_to_remove,
+            ):
+                selected_indices = {
+                    progression_options.index(option) for option in selected_to_remove
+                }
+                st.session_state.progression = [
+                    chord
+                    for index, chord in enumerate(st.session_state.progression)
+                    if index not in selected_indices
+                ]
+                st.rerun()
+            #Clear the whole progression
+            if st.button("Clear progression", key="clear_progression"):
+                st.session_state.progression = []
+                st.rerun()
+        else:
+            st.write("Your progression is empty.")
 
     with tab3:
         st.header("Suggestions")
