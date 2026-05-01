@@ -1,7 +1,7 @@
 #Import libraries
 import streamlit as st
 from piano import render_piano
-from chord_utils import get_chord_name
+from chord_utils import get_chord_name, detect_key
 
 #Title of the App
 st.title('GhostWriter')
@@ -89,6 +89,7 @@ if mode == "Producing":
         #Add the chord to the progression
         if st.button("Add chord", key="add_progression_chord"):
             st.session_state.progression.append(selected_chord2)
+            detect_key(st.session_state.progression, type_map)
             st.rerun()
         #See the current progression
         st.subheader("Current progression")
@@ -125,6 +126,8 @@ if mode == "Producing":
                 st.rerun()
         else:
             st.write("Your progression is empty.")
+
+        st.button("Detect Key")
 
     with tab3:
         st.header("Suggestions")
