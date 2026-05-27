@@ -1,35 +1,7 @@
 import streamlit as st
 from piano import render_piano
 from chord_utils import get_chord_name, detect_key
-
-# Music options used by the progression builder.
-type_map = {
-    "Major": "",
-    "Minor": "m",
-    "7th": "7",
-    "Major 7th": "maj7",
-    "Minor 7th": "min7",
-    "Suspended": "sus",
-    "Diminished": "dim",
-    "9th": "9",
-    "Major 9th": "maj9",
-    "Minor 9th": "min9",
-    "Add9": "add9",
-}
-chord_types = (
-    "Major",
-    "Minor",
-    "7th",
-    "Major 7th",
-    "Minor 7th",
-    "Suspended",
-    "Diminished",
-    "9th",
-    "Major 9th",
-    "Minor 9th",
-    "Add9",
-)
-root_notes = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
+from music_config import TYPE_MAP, ROOT_NOTES, CHORD_TYPES
 
 st.title("GhostWriter")
 st.subheader("The pen behind your sound")
@@ -42,17 +14,17 @@ if "progression" not in st.session_state:
 st.header("Progression Builder")
 root_note = st.selectbox(
     "Select a root note",
-    root_notes,
+    ROOT_NOTES,
     key="progression_root_note",
 )
 st.write("You selected:", root_note)
 
 chord_type = st.selectbox(
     "Select a chord type",
-    chord_types,
+    CHORD_TYPES,
     key="progression_chord_type",
 )
-selected_chord, revised_notes = get_chord_name(root_note, chord_type, type_map)
+selected_chord, revised_notes = get_chord_name(root_note, chord_type, TYPE_MAP)
 st.write("Chord:", selected_chord)
 st.write("Notes:", revised_notes)
 st.components.v1.html(render_piano(revised_notes, autoplay=True), height=300)
@@ -68,7 +40,7 @@ if st.session_state.progression:
         for index, chord in enumerate(st.session_state.progression)
     ]
     current_progression = " -> ".join(st.session_state.progression)
-    detected_key = detect_key(st.session_state.progression, type_map)
+    detected_key = detect_key(st.session_state.progression, TYPE_MAP)
 
     st.write("Progression:", current_progression)
     st.write("Key:", detected_key)
@@ -106,7 +78,7 @@ st.divider()
 st.header("Writing Direction")
 if st.session_state.get("progression"):
     st.write("Current progression:", " -> ".join(st.session_state.progression))
-    st.write("Detected key:", detect_key(st.session_state.progression, type_map))
+    st.write("Detected key:", detect_key(st.session_state.progression, TYPE_MAP))
 else:
     st.write("Build a progression first to connect your writing to the song.")
 
@@ -126,7 +98,7 @@ if st.button("Build writing direction", key="build_writing_direction"):
         st.warning("Build a progression first.")
     else:
         current_progression = " -> ".join(st.session_state.progression)
-        detected_key = detect_key(st.session_state.progression, type_map)
+        detected_key = detect_key(st.session_state.progression, TYPE_MAP)
 
         st.subheader("Writing direction")
         st.write("Song brief:", song_brief)
