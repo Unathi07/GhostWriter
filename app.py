@@ -61,13 +61,13 @@ with music_tab:
             chord_types,
             key="progression_chord_type",
         )
-        selected_chord2, revised_notes2 = get_chord_name(root_note, chord_type, type_map)
-        st.write("Chord:", selected_chord2)
-        st.write("Notes:", revised_notes2)
-        st.components.v1.html(render_piano(revised_notes2, autoplay=True), height=300)
+        selected_chord, revised_notes = get_chord_name(root_note, chord_type, type_map)
+        st.write("Chord:", selected_chord)
+        st.write("Notes:", revised_notes)
+        st.components.v1.html(render_piano(revised_notes, autoplay=True), height=300)
 
         if st.button("Add chord", key="add_progression_chord"):
-            st.session_state.progression.append(selected_chord2)
+            st.session_state.progression.append(selected_chord)
             st.rerun()
 
         st.subheader("Current progression")
@@ -135,5 +135,52 @@ with writing_tab:
 
     with brainstorm_tab:
         st.header("Brainstorm")
+        # User describes the feeling, story, mood, or situation behind the song.
+        song_brief = st.text_area(
+            "Song idea",
+            placeholder="Describe the feeling, story, mood, or situation behind the song...",
+            height=160,
+            key="song_brief",
+        )
+
+        # Builds a writing direction from the user's song idea and progression.
+        if st.button("Build writing direction", key="build_writing_direction"):
+            if not song_brief:
+                st.warning("Add a song brief first.")
+            elif not st.session_state.get("progression"):
+                st.warning("Build a progression in the Music tab first.")
+            else:
+                current_progression = " -> ".join(st.session_state.progression)
+                detected_key = detect_key(st.session_state.progression, type_map)
+
+                st.subheader("Writing direction")
+                st.write("Song brief:", song_brief)
+                st.write("Progression:", current_progression)
+                st.write("Detected key:", detected_key)
+
+                # Template-based guidance for now; this section can later be replaced by an AI response.
+                st.write("Core idea:", f"Build the song around: {song_brief}")
+                st.write(
+                    "Hook angle:",
+                    "Focus the chorus on one simple emotional truth the listener can repeat.",
+                )
+                st.write(
+                    "Verse scene:",
+                    "Start with a specific moment, place, or memory instead of explaining the whole feeling.",
+                )
+                st.write(
+                    "Questions to explore:",
+                    [
+                        "What does the singer want but cannot say directly?",
+                        "What small detail makes the emotion feel real?",
+                        "What changes between the first verse and the final chorus?",
+                    ],
+                )
+                # Connects the writing prompt back to the harmonic context from the Music tab.
+                st.write(
+                    "Starter line:",
+                    f"In {detected_key}, let the progression {current_progression} carry a feeling of honesty and movement.",
+                )
+
     with inspiration_tab:
         st.header("Inspiration")
