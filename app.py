@@ -4,31 +4,24 @@ from piano import render_piano
 from chord_utils import get_chord_name, detect_key
 
 #Title of the App
-st.title('GhostWriter')
-st.subheader('The pen behind your sound')
+st.title("GhostWriter")
+st.subheader("The pen behind your sound")
 
-#Select a mode
-mode = st.radio(
-    "What do you need help with?",
-    ["Producing","Song Writing"],
-    captions=[
-        "Match the perfect beats.",
-        "Turn your ideas into life.",
-    ],
-    index=None,
-)
-#For producers
-if mode == "Producing":
-    st.subheader('Make the sounds in your head ideas')
+#Top-level sections
+music_tab, writing_tab = st.tabs(["Music", "Writing"])
+
+with music_tab:
+    st.subheader("Make the sounds in your head ideas")
     options = st.multiselect(
         "What instrument(s) are you using?",
-        ["Guitar", "Keys", "Bass Guitar", "Drums","Strings"],
+        ["Guitar", "Keys", "Bass Guitar", "Drums", "Strings"],
         default=["Keys", "Bass Guitar", "Drums"],
     )
-    #Tab options
     st.write("You selected:", options)
-    tab1, tab2, tab3 = st.tabs(["Chords", "Progression", "Suggestions"])
-    #Chord name
+    chord_tab, progression_tab, suggestions_tab = st.tabs(
+        ["Chords", "Progression", "Suggestions"]
+    )
+
     type_map = {
         "Major": "",
         "Minor": "m",
@@ -42,46 +35,43 @@ if mode == "Producing":
         "Minor 9th": "min9",
         "Add9": "add9",
     }
-    chord_types =(
-            "Major",
-            "Minor",
-            "7th",
-            "Major 7th",
-            "Minor 7th",
-            "Suspended",
-            "Diminished",
-            "9th",
-            "Major 9th",
-            "Minor 9th",
-            "Add9"
-                  )
-    root_notes = ("C","C#","D","D#","E","F","F#","G","G#","A","A#","B")
-    #A list to store the progression
+    chord_types = (
+        "Major",
+        "Minor",
+        "7th",
+        "Major 7th",
+        "Minor 7th",
+        "Suspended",
+        "Diminished",
+        "9th",
+        "Major 9th",
+        "Minor 9th",
+        "Add9",
+    )
+    root_notes = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
+
     if "progression" not in st.session_state:
         st.session_state.progression = []
-    #Information on the chords
-    with tab1:
+
+    with chord_tab:
         st.header("Chords")
-        root_note=st.selectbox(
-        "Select a root note",
-             root_notes
-            ,key="root_note"
+        root_note = st.selectbox(
+            "Select a root note",
+            root_notes,
+            key="root_note",
         )
         st.write("You selected:", root_note)
-        chord_type=st.selectbox(
+        chord_type = st.selectbox(
             "Select a chord type",
             chord_types,
-            key="chord_type"
+            key="chord_type",
         )
         selected_chord, revised_notes = get_chord_name(root_note, chord_type, type_map)
         st.write("Chord:", selected_chord)
         st.write("Notes:", revised_notes)
-
-        #HTML Code
         st.components.v1.html(render_piano(revised_notes), height=300)
-    #Formulating a chord progression
-    with tab2:
-        #Note Options
+
+    with progression_tab:
         st.header("Progression")
         root_note2 = st.selectbox(
             "Select a root note",
@@ -89,7 +79,6 @@ if mode == "Producing":
             key="progression_root_note",
         )
         st.write("You selected:", root_note2)
-        #Chord Type Selection
         chord_type2 = st.selectbox(
             "Select a chord type",
             chord_types,
@@ -100,11 +89,10 @@ if mode == "Producing":
         st.write("Notes:", revised_notes2)
         st.components.v1.html(render_piano(revised_notes2, autoplay=True), height=300)
 
-        #Add the chord to the progression
         if st.button("Add chord", key="add_progression_chord"):
             st.session_state.progression.append(selected_chord2)
             st.rerun()
-        #See the current progression
+
         st.subheader("Current progression")
         if st.session_state.progression:
             progression_options = [
@@ -112,10 +100,8 @@ if mode == "Producing":
                 for index, chord in enumerate(st.session_state.progression)
             ]
             st.write("Progression:", " -> ".join(st.session_state.progression))
-            #Detect the key of the chord progression
             detect = detect_key(st.session_state.progression, type_map)
             st.write("Key: ", detect)
-            #Remove selected chord
             selected_to_remove = st.multiselect(
                 "Select chord(s) to remove",
                 progression_options,
@@ -136,31 +122,25 @@ if mode == "Producing":
                     if index not in selected_indices
                 ]
                 st.rerun()
-            #Clear the whole progression
+
             if st.button("Clear progression", key="clear_progression"):
                 st.session_state.progression = []
                 st.rerun()
         else:
             st.write("Your progression is empty.")
 
-
-    with tab3:
+    with suggestions_tab:
         st.header("Suggestions")
 
-#For song-writers
-elif mode == "Song Writing":
-    st.subheader('The pen behind your sound')
-    tab1, tab2, tab3 = st.tabs(["Lyrics", "Brainstorm", "Inspiration"])
+with writing_tab:
+    st.subheader("Turn your ideas into lyrics")
+    lyric_tab, brainstorm_tab, inspiration_tab = st.tabs(
+        ["Lyrics", "Brainstorm", "Inspiration"]
+    )
 
-    with tab1:
+    with lyric_tab:
         st.header("Lyrics")
-    with tab2:
+    with brainstorm_tab:
         st.header("Brainstorm")
-    with tab3:
+    with inspiration_tab:
         st.header("Inspiration")
-
-
-
-
-
-
