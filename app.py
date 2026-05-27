@@ -42,6 +42,20 @@ if mode == "Producing":
         "Minor 9th": "min9",
         "Add9": "add9",
     }
+    chord_types =(
+            "Major",
+            "Minor",
+            "7th",
+            "Major 7th",
+            "Minor 7th",
+            "Suspended",
+            "Diminished",
+            "9th",
+            "Major 9th",
+            "Minor 9th",
+            "Add9"
+                  )
+    root_notes = ("C","C#","D","D#","E","F","F#","G","G#","A","A#","B")
     #A list to store the progression
     if "progression" not in st.session_state:
         st.session_state.progression = []
@@ -49,13 +63,14 @@ if mode == "Producing":
     with tab1:
         st.header("Chords")
         root_note=st.selectbox(
-            "Select a root note",
-            ("C","C#","D","D#","E","F","F#","G","G#","A","A#","B"),key="root_note"
+        "Select a root note",
+             root_notes
+            ,key="root_note"
         )
         st.write("You selected:", root_note)
         chord_type=st.selectbox(
             "Select a chord type",
-            ("Major","Minor","7th","Major 7th","Minor 7th","Suspended","Diminished","9th","Major 9th","Minor 9th","Minor 9th","Add9"),
+            chord_types,
             key="chord_type"
         )
         selected_chord, revised_notes = get_chord_name(root_note, chord_type, type_map)
@@ -70,15 +85,14 @@ if mode == "Producing":
         st.header("Progression")
         root_note2 = st.selectbox(
             "Select a root note",
-            ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"),
+            root_notes,
             key="progression_root_note",
         )
         st.write("You selected:", root_note2)
         #Chord Type Selection
         chord_type2 = st.selectbox(
             "Select a chord type",
-            ("Major", "Minor", "7th", "Major 7th", "Minor 7th", "Suspended", "Diminished", "9th", "Major 9th",
-             "Minor 9th", "Minor 9th", "Add9"),
+            chord_types,
             key="progression_chord_type",
         )
         selected_chord2, revised_notes2 = get_chord_name(root_note2, chord_type2, type_map)
