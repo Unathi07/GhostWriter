@@ -89,7 +89,6 @@ if mode == "Producing":
         #Add the chord to the progression
         if st.button("Add chord", key="add_progression_chord"):
             st.session_state.progression.append(selected_chord2)
-            detect_key(st.session_state.progression, type_map)
             st.rerun()
         #See the current progression
         st.subheader("Current progression")
@@ -99,6 +98,9 @@ if mode == "Producing":
                 for index, chord in enumerate(st.session_state.progression)
             ]
             st.write("Progression:", " -> ".join(st.session_state.progression))
+            #Detect the key of the chord progression
+            detect = detect_key(st.session_state.progression, type_map)
+            st.write("Key: ", detect)
             #Remove selected chord
             selected_to_remove = st.multiselect(
                 "Select chord(s) to remove",
@@ -127,7 +129,6 @@ if mode == "Producing":
         else:
             st.write("Your progression is empty.")
 
-        st.button("Detect Key")
 
     with tab3:
         st.header("Suggestions")
@@ -143,7 +144,6 @@ elif mode == "Song Writing":
         st.header("Brainstorm")
     with tab3:
         st.header("Inspiration")
-
 
 
 
