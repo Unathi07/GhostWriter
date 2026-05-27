@@ -1,7 +1,8 @@
 import streamlit as st
 from piano import render_piano
 from chord_utils import get_chord_name, detect_key
-from music_config import TYPE_MAP, ROOT_NOTES, CHORD_TYPES
+from music_config import ROOT_NOTES, CHORD_TYPES
+from writing_utils import build_writing_direction
 
 st.title("GhostWriter")
 st.subheader("The pen behind your sound")
@@ -24,7 +25,7 @@ chord_type = st.selectbox(
     CHORD_TYPES,
     key="progression_chord_type",
 )
-selected_chord, revised_notes = get_chord_name(root_note, chord_type, TYPE_MAP)
+selected_chord, revised_notes = get_chord_name(root_note, chord_type)
 st.write("Chord:", selected_chord)
 st.write("Notes:", revised_notes)
 st.components.v1.html(render_piano(revised_notes, autoplay=True), height=300)
@@ -40,7 +41,7 @@ if st.session_state.progression:
         for index, chord in enumerate(st.session_state.progression)
     ]
     current_progression = " -> ".join(st.session_state.progression)
-    detected_key = detect_key(st.session_state.progression, TYPE_MAP)
+    detected_key = detect_key(st.session_state.progression)
 
     st.write("Progression:", current_progression)
     st.write("Key:", detected_key)
@@ -78,7 +79,7 @@ st.divider()
 st.header("Writing Direction")
 if st.session_state.get("progression"):
     st.write("Current progression:", " -> ".join(st.session_state.progression))
-    st.write("Detected key:", detect_key(st.session_state.progression, TYPE_MAP))
+    st.write("Detected key:", detect_key(st.session_state.progression))
 else:
     st.write("Build a progression first to connect your writing to the song.")
 
@@ -98,36 +99,18 @@ if st.button("Build writing direction", key="build_writing_direction"):
         st.warning("Build a progression first.")
     else:
         current_progression = " -> ".join(st.session_state.progression)
-        detected_key = detect_key(st.session_state.progression, TYPE_MAP)
+        detected_key = detect_key(st.session_state.progression)
 
         st.subheader("Writing direction")
-        st.write("Song brief:", song_brief)
-        st.write("Progression:", current_progression)
-        st.write("Detected key:", detected_key)
+        direction = build_writing_direction(
+            song_brief,
+            detected_key,
+            current_progression,
+        )
 
         # Template-based guidance for now; this section can later be replaced by an AI response.
-        st.write("Core idea:", f"Build the song around: {song_brief}")
-        st.write(
-            "Hook angle:",
-            "Focus the chorus on one simple emotional truth the listener can repeat.",
-        )
-        st.write(
-            "Verse scene:",
-            "Start with a specific moment, place, or memory instead of explaining the whole feeling.",
-        )
-        st.write(
-            "Questions to explore:",
-            [
-                "What does the singer want but cannot say directly?",
-                "What small detail makes the emotion feel real?",
-                "What changes between the first verse and the final chorus?",
-            ],
-        )
-        # Connects the writing prompt back to the harmonic context from the progression builder.
-        st.write(
-            "Starter line:",
-            f"In {detected_key}, let the progression {current_progression} carry a feeling of honesty and movement.",
-        )
+        for section, content in direction.items():
+            st.write(section + ":", content)
 
 st.divider()
 
