@@ -1,4 +1,4 @@
-from music21 import harmony, stream, key ,chord
+from music21 import chord, harmony, stream
 
 #Splits chord into the root note and chord name
 def get_chord_name(root_note, chord_type, type_map):
@@ -10,13 +10,14 @@ def get_chord_name(root_note, chord_type, type_map):
     revised_notes = [pitch.name.replace("-", "b") for pitch in chord_symbol.pitches]
     selected_chord = f"{root_note} {chord_type}"
 
-    return selected_chord,revised_notes
+    return selected_chord, revised_notes
 
 #Detecting the key of the progression
-def detect_key(progression,type_map):
+def detect_key(progression, type_map):
     if not progression:
         return None
 
+    #Holds the progression
     score = stream.Score()
     for chord_name in progression:
         root, chord_type = chord_name.split(" ", 1)
@@ -25,6 +26,6 @@ def detect_key(progression,type_map):
         real_chord = chord.Chord(chord_symbol.pitches)
         score.append(real_chord)
 
-    detected_key = score.analyze('key')
-
+    #Detects the key
+    detected_key = score.analyze("key")
     return str(detected_key)
