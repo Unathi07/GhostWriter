@@ -33,11 +33,12 @@ with builder_column:
     selected_chord, revised_notes = get_chord_name(root_note, chord_type)
     st.write("Chord:", selected_chord)
     st.write("Notes:", revised_notes)
-    st.components.v1.html(render_piano(revised_notes, autoplay=True), height=300)
 
     if st.button("Add chord", key="add_progression_chord"):
         st.session_state.progression.append(selected_chord)
         st.rerun()
+
+    st.components.v1.html(render_piano(revised_notes, autoplay=True), height=300)
 
 with progression_column:
     st.subheader("Current progression")
