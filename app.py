@@ -35,6 +35,10 @@ st.subheader("The pen behind your sound")
 # Streamlit reruns this file after interactions, so progression must persist in session state.
 if "progression" not in st.session_state:
     st.session_state.progression = []
+if "writing_direction" not in st.session_state:
+    st.session_state.writing_direction = None
+if "writing_direction_context" not in st.session_state:
+    st.session_state.writing_direction_context = None
 
 # Progression builder: stores chords in order and analyzes the current key.
 st.header("Progression Builder")
@@ -181,16 +185,37 @@ if st.button("Build writing direction", key="build_writing_direction"):
         current_progression = " -> ".join(st.session_state.progression)
         detected_key = detect_key(st.session_state.progression)
 
-        st.subheader("Writing direction")
-        direction = build_writing_direction(
+        st.session_state.writing_direction = build_writing_direction(
             song_brief,
             detected_key,
             current_progression,
         )
+        st.session_state.writing_direction_context = {
+            "Song idea": song_brief,
+            "Progression": current_progression,
+            "Detected key": detected_key,
+        }
 
-        # Template-based guidance for now; this section can later be replaced by an AI response.
-        for section, content in direction.items():
+if st.session_state.writing_direction:
+    st.subheader("Writing direction")
+
+    if st.session_state.writing_direction_context:
+        for label, value in st.session_state.writing_direction_context.items():
+            st.write(label + ":", value)
+
+    # Template-based guidance for now; this section can later be replaced by an AI response.
+    for section, content in st.session_state.writing_direction.items():
+        if isinstance(content, list):
+            st.write(section + ":")
+            for item in content:
+                st.write("- " + item)
+        else:
             st.write(section + ":", content)
+
+    if st.button("Clear writing direction", key="clear_writing_direction"):
+        st.session_state.writing_direction = None
+        st.session_state.writing_direction_context = None
+        st.rerun()
 
 st.divider()
 
