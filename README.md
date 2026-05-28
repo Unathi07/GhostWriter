@@ -6,9 +6,11 @@ The goal is to help users move from a chord progression to a song idea by combin
 
 ## Current Features
 
+- One-page workflow for moving from progression to writing direction
 - Build a chord progression from root notes and chord types
 - Preview chord notes on a piano
 - Detect the key of the current progression
+- Generate diatonic chord suggestions from the detected key
 - Write a free-form song idea
 - Generate a structured writing direction from the song idea and progression
 - Keep lyric notes in a scratchpad
@@ -33,11 +35,16 @@ Streamlit will print a local URL, usually:
 http://localhost:8501
 ```
 
+## Run Tests
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest
+```
+
 ## Project Direction
 
 Planned improvements:
 
-- Add smarter chord and progression suggestions
 - Add AI-powered interpretation of song ideas
 - Save and reload song projects
 - Export progressions as MIDI
