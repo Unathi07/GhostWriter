@@ -57,7 +57,16 @@ with progression_column:
         suggested_chords = suggest_diatonic_chords(detected_key)
 
         if suggested_chords:
-            st.write("Suggested chords:", " -> ".join(suggested_chords))
+            st.write("Suggested chords")
+            suggestion_columns = st.columns(4)
+
+            for index, suggested_chord in enumerate(suggested_chords):
+                button_key = f"suggested_chord_{index}_{suggested_chord}"
+
+                with suggestion_columns[index % 4]:
+                    if st.button(suggested_chord, key=button_key):
+                        st.session_state.progression.append(suggested_chord)
+                        st.rerun()
 
         selected_to_remove = st.multiselect(
             "Select chord(s) to remove",
