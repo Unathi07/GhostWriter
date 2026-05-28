@@ -26,8 +26,21 @@ def test_suggest_diatonic_chords_returns_c_major_suggestions():
         "F Major",
         "G Major",
         "A Minor",
+        "B Diminished",
     ]
 
 
 def test_suggest_diatonic_chords_returns_empty_list_without_key():
     assert suggest_diatonic_chords(None) == []
+
+
+def test_suggest_diatonic_chords_returns_g_major_suggestions():
+    assert suggest_diatonic_chords("G major") == [
+        "G Major",
+        "A Minor",
+        "B Minor",
+        "C Major",
+        "D Major",
+        "E Minor",
+        "F# Diminished",
+    ]

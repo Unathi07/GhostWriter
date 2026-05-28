@@ -1,4 +1,4 @@
-from music21 import chord, harmony, stream
+from music21 import chord, harmony, key, roman, stream
 from music_config import TYPE_MAP
 
 # Splits chord into the root note and chord name.
@@ -40,8 +40,17 @@ def suggest_diatonic_chords(detected_key):
     if detected_key is None:
         return []
 
-    major_key_chords = {
-        "C major": ["C Major", "D Minor", "E Minor", "F Major", "G Major", "A Minor"],
-    }
+    key_parts = detected_key.split()
+    tonic = key_parts[0]
+    mode = key_parts[1] if len(key_parts) > 1 else "major"
+    detected = key.Key(tonic, mode)
+    roman_numerals = ("I", "ii", "iii", "IV", "V", "vi", "viio")
 
-    return major_key_chords.get(detected_key, [])
+    suggestions = []
+    for numeral in roman_numerals:
+        roman_chord = roman.RomanNumeral(numeral, detected)
+        root = roman_chord.root().name.replace("-", "b")
+        quality = roman_chord.quality.title()
+        suggestions.append(f"{root} {quality}")
+
+    return suggestions
