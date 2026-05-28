@@ -1,7 +1,7 @@
 import streamlit as st
 from piano import render_piano
 from chord_utils import get_chord_name, detect_key, suggest_diatonic_chords
-from music_config import ROOT_NOTES, CHORD_TYPES
+from music_config import ROOT_NOTES, CHORD_TYPES, PRESET_PROGRESSIONS
 from writing_utils import build_writing_direction
 
 
@@ -28,6 +28,19 @@ st.header("Progression Builder")
 builder_column, progression_column = st.columns([1, 1])
 
 with builder_column:
+    st.subheader("Start with a preset")
+    preset_name = st.selectbox(
+        "Choose a progression style",
+        tuple(PRESET_PROGRESSIONS.keys()),
+        key="preset_progression",
+    )
+    preset_progression = PRESET_PROGRESSIONS[preset_name]
+    st.write("Preset:", " -> ".join(preset_progression))
+
+    if st.button("Use preset", key="use_preset_progression"):
+        st.session_state.progression = preset_progression.copy()
+        st.rerun()
+
     st.subheader("Add a chord")
     root_note = st.selectbox(
         "Select a root note",

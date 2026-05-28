@@ -26,3 +26,9 @@ CHORD_TYPES = (
     "Add9",
 )
 ROOT_NOTES = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
+PRESET_PROGRESSIONS = {
+    "Pop": ["C Major", "G Major", "A Minor", "F Major"],
+    "Sad": ["A Minor", "F Major", "C Major", "G Major"],
+    "R&B": ["A Minor 7th", "D Minor 7th", "G 7th", "C Major 7th"],
+    "Hopeful": ["C Major", "F Major", "A Minor", "G Major"],
+}
