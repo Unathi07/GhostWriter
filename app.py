@@ -4,6 +4,17 @@ from chord_utils import get_chord_name, detect_key, suggest_diatonic_chords
 from music_config import ROOT_NOTES, CHORD_TYPES
 from writing_utils import build_writing_direction
 
+
+def show_progression_chords(progression):
+    # Shows the progression as small numbered blocks instead of one long sentence.
+    chord_columns = st.columns(4)
+
+    for index, chord_name in enumerate(progression):
+        with chord_columns[index % 4]:
+            with st.container(border=True):
+                st.markdown(f"**{index + 1}. {chord_name}**")
+
+
 st.title("GhostWriter")
 st.subheader("The pen behind your sound")
 
@@ -47,11 +58,23 @@ with progression_column:
             f"{index + 1}. {chord}"
             for index, chord in enumerate(st.session_state.progression)
         ]
-        current_progression = " -> ".join(st.session_state.progression)
         detected_key = detect_key(st.session_state.progression)
 
-        st.write("Progression:", current_progression)
+        st.write("Progression")
+        show_progression_chords(st.session_state.progression)
         st.write("Key:", detected_key)
+
+        undo_column, clear_column = st.columns(2)
+
+        with undo_column:
+            if st.button("Undo last chord", key="undo_last_chord"):
+                st.session_state.progression.pop()
+                st.rerun()
+
+        with clear_column:
+            if st.button("Clear progression", key="clear_progression"):
+                st.session_state.progression = []
+                st.rerun()
 
         # Uses the detected key to suggest complementary chords.
         suggested_chords = suggest_diatonic_chords(detected_key)
@@ -87,10 +110,6 @@ with progression_column:
                 for index, chord in enumerate(st.session_state.progression)
                 if index not in selected_indices
             ]
-            st.rerun()
-
-        if st.button("Clear progression", key="clear_progression"):
-            st.session_state.progression = []
             st.rerun()
     else:
         st.write("Your progression is empty.")
