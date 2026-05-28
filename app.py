@@ -1,7 +1,7 @@
 import streamlit as st
 from piano import render_piano
 from chord_utils import get_chord_name, detect_key, suggest_diatonic_chords
-from music_config import ROOT_NOTES, CHORD_TYPES, PRESET_PROGRESSIONS
+from music_config import ROOT_NOTES, CHORD_TYPES, KEY_OPTIONS, PRESET_PROGRESSIONS
 from writing_utils import build_writing_direction
 
 
@@ -13,6 +13,20 @@ def show_progression_chords(progression):
         with chord_columns[index % 4]:
             with st.container(border=True):
                 st.markdown(f"**{index + 1}. {chord_name}**")
+
+
+def show_add_chord_buttons(chords, key_prefix):
+    # Adds a row of quick-add buttons for suggested or key-based chords.
+    chord_columns = st.columns(4)
+
+    for index, chord_name in enumerate(chords):
+        # Streamlit needs each button to have a unique key.
+        button_key = f"{key_prefix}_{index}_{chord_name}"
+
+        with chord_columns[index % 4]:
+            if st.button(chord_name, key=button_key):
+                st.session_state.progression.append(chord_name)
+                st.rerun()
 
 
 st.title("GhostWriter")
@@ -28,6 +42,17 @@ st.header("Progression Builder")
 builder_column, progression_column = st.columns([1, 1])
 
 with builder_column:
+    # Starting key suggestions help the user begin before a progression exists.
+    st.subheader("Start with a key")
+    starting_key = st.selectbox(
+        "Choose a starting key",
+        KEY_OPTIONS,
+        key="starting_key",
+    )
+    starting_key_chords = suggest_diatonic_chords(starting_key)
+    show_add_chord_buttons(starting_key_chords, "starting_key_chord")
+
+    # Presets give users a fast starting point they can still edit afterward.
     st.subheader("Start with a preset")
     preset_name = st.selectbox(
         "Choose a progression style",
@@ -41,6 +66,7 @@ with builder_column:
         st.session_state.progression = preset_progression.copy()
         st.rerun()
 
+    # Manual chord selection is useful for chords outside the suggested options.
     st.subheader("Add a chord")
     root_note = st.selectbox(
         "Select a root note",
@@ -94,15 +120,7 @@ with progression_column:
 
         if suggested_chords:
             st.write("Suggested chords")
-            suggestion_columns = st.columns(4)
-
-            for index, suggested_chord in enumerate(suggested_chords):
-                button_key = f"suggested_chord_{index}_{suggested_chord}"
-
-                with suggestion_columns[index % 4]:
-                    if st.button(suggested_chord, key=button_key):
-                        st.session_state.progression.append(suggested_chord)
-                        st.rerun()
+            show_add_chord_buttons(suggested_chords, "suggested_chord")
 
         selected_to_remove = st.multiselect(
             "Select chord(s) to remove",

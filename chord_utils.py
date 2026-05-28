@@ -44,7 +44,12 @@ def suggest_diatonic_chords(detected_key):
     tonic = key_parts[0]
     mode = key_parts[1] if len(key_parts) > 1 else "major"
     detected = key.Key(tonic, mode)
-    roman_numerals = ("I", "ii", "iii", "IV", "V", "vi", "viio")
+
+    # Minor keys use different roman numerals from major keys.
+    if mode == "minor":
+        roman_numerals = ("i", "iio", "III", "iv", "v", "VI", "VII")
+    else:
+        roman_numerals = ("I", "ii", "iii", "IV", "V", "vi", "viio")
 
     suggestions = []
     for numeral in roman_numerals:

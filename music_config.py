@@ -26,6 +26,15 @@ CHORD_TYPES = (
     "Add9",
 )
 ROOT_NOTES = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
+
+# Builds options like "C major" and "A minor" for the starting-key selector.
+KEY_OPTIONS = tuple(
+    f"{root_note} {mode}"
+    for root_note in ROOT_NOTES
+    for mode in ("major", "minor")
+)
+
+# Ready-made progressions give users a fast starting point.
 PRESET_PROGRESSIONS = {
     "Pop": ["C Major", "G Major", "A Minor", "F Major"],
     "Sad": ["A Minor", "F Major", "C Major", "G Major"],

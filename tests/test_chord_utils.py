@@ -44,3 +44,15 @@ def test_suggest_diatonic_chords_returns_g_major_suggestions():
         "E Minor",
         "F# Diminished",
     ]
+
+
+def test_suggest_diatonic_chords_returns_a_minor_suggestions():
+    assert suggest_diatonic_chords("A minor") == [
+        "A Minor",
+        "B Diminished",
+        "C Major",
+        "D Minor",
+        "E Minor",
+        "F Major",
+        "G Major",
+    ]
