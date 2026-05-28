@@ -45,7 +45,7 @@ if st.session_state.progression:
 
     st.write("Progression:", current_progression)
     st.write("Key:", detected_key)
-
+    # Uses the detected key to suggest complementary chords
     suggested_chords = suggest_diatonic_chords(detected_key)
 
     if suggested_chords:
