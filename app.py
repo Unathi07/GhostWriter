@@ -42,61 +42,90 @@ st.header("Progression Builder")
 builder_column, progression_column = st.columns([1, 1])
 
 with builder_column:
-    # Starting key suggestions help the user begin before a progression exists.
-    st.subheader("Start with a key")
-    starting_key = st.selectbox(
-        "Choose a starting key",
-        KEY_OPTIONS,
-        key="starting_key",
-    )
-    starting_key_chords = suggest_diatonic_chords(starting_key)
-    show_add_chord_buttons(starting_key_chords, "starting_key_chord")
+    simple_tab, advanced_tab = st.tabs(["Simple", "Advanced"])
 
-    # Presets give users a fast starting point they can still edit afterward.
-    st.subheader("Start with a preset")
-    preset_name = st.selectbox(
-        "Choose a progression style",
-        tuple(PRESET_PROGRESSIONS.keys()),
-        key="preset_progression",
-    )
-    preset_progression = PRESET_PROGRESSIONS[preset_name]
-    st.write("Preset:", " -> ".join(preset_progression))
+    with simple_tab:
+        # Starting key suggestions help the user begin before a progression exists.
+        st.subheader("Start with a key")
+        starting_key = st.selectbox(
+            "Choose a starting key",
+            KEY_OPTIONS,
+            key="starting_key",
+        )
+        starting_key_chords = suggest_diatonic_chords(starting_key)
+        show_add_chord_buttons(starting_key_chords, "starting_key_chord")
 
-    if st.button("Use preset", key="use_preset_progression"):
-        st.session_state.progression = preset_progression.copy()
-        st.rerun()
+        # Presets give users a fast starting point they can still edit afterward.
+        st.subheader("Start with a preset")
+        preset_name = st.selectbox(
+            "Choose a progression style",
+            tuple(PRESET_PROGRESSIONS.keys()),
+            key="preset_progression",
+        )
+        preset_progression = PRESET_PROGRESSIONS[preset_name]
+        st.write("Preset:", " -> ".join(preset_progression))
 
-    # Manual chord selection is useful for chords outside the suggested options.
-    st.subheader("Add a chord")
-    root_note = st.selectbox(
-        "Select a root note",
-        ROOT_NOTES,
-        key="progression_root_note",
-    )
-    st.write("You selected:", root_note)
+        if st.button("Use preset", key="use_preset_progression"):
+            st.session_state.progression = preset_progression.copy()
+            st.rerun()
 
-    chord_type = st.selectbox(
-        "Select a chord type",
-        CHORD_TYPES,
-        key="progression_chord_type",
-    )
-    selected_chord, revised_notes = get_chord_name(root_note, chord_type)
-    st.write("Chord:", selected_chord)
-    st.write("Notes:", revised_notes)
+    with advanced_tab:
+        # Manual chord selection is useful for chords outside the suggested options.
+        st.subheader("Manual chord builder")
+        root_note = st.selectbox(
+            "Select a root note",
+            ROOT_NOTES,
+            key="progression_root_note",
+        )
+        st.write("You selected:", root_note)
 
-    if st.button("Add chord", key="add_progression_chord"):
-        st.session_state.progression.append(selected_chord)
-        st.rerun()
+        chord_type = st.selectbox(
+            "Select a chord type",
+            CHORD_TYPES,
+            key="progression_chord_type",
+        )
+        selected_chord, revised_notes = get_chord_name(root_note, chord_type)
+        st.write("Chord:", selected_chord)
+        st.write("Notes:", revised_notes)
 
-    st.components.v1.html(render_piano(revised_notes, autoplay=True), height=300)
+        if st.button("Add chord", key="add_progression_chord"):
+            st.session_state.progression.append(selected_chord)
+            st.rerun()
+
+        st.components.v1.html(render_piano(revised_notes, autoplay=True), height=300)
+
+        st.subheader("Edit progression")
+        if st.session_state.progression:
+            progression_options = [
+                f"{index + 1}. {chord}"
+                for index, chord in enumerate(st.session_state.progression)
+            ]
+            selected_to_remove = st.multiselect(
+                "Select chord(s) to remove",
+                progression_options,
+                key="progression_remove_selection",
+            )
+
+            if st.button(
+                "Remove selected chord(s)",
+                key="remove_progression_chords",
+                disabled=not selected_to_remove,
+            ):
+                selected_indices = {
+                    progression_options.index(option) for option in selected_to_remove
+                }
+                st.session_state.progression = [
+                    chord
+                    for index, chord in enumerate(st.session_state.progression)
+                    if index not in selected_indices
+                ]
+                st.rerun()
+        else:
+            st.write("Add chords before using advanced editing.")
 
 with progression_column:
     st.subheader("Current progression")
     if st.session_state.progression:
-        progression_options = [
-            f"{index + 1}. {chord}"
-            for index, chord in enumerate(st.session_state.progression)
-        ]
         detected_key = detect_key(st.session_state.progression)
 
         st.write("Progression")
@@ -121,27 +150,6 @@ with progression_column:
         if suggested_chords:
             st.write("Suggested chords")
             show_add_chord_buttons(suggested_chords, "suggested_chord")
-
-        selected_to_remove = st.multiselect(
-            "Select chord(s) to remove",
-            progression_options,
-            key="progression_remove_selection",
-        )
-
-        if st.button(
-            "Remove selected chord(s)",
-            key="remove_progression_chords",
-            disabled=not selected_to_remove,
-        ):
-            selected_indices = {
-                progression_options.index(option) for option in selected_to_remove
-            }
-            st.session_state.progression = [
-                chord
-                for index, chord in enumerate(st.session_state.progression)
-                if index not in selected_indices
-            ]
-            st.rerun()
     else:
         st.write("Your progression is empty.")
 
