@@ -36,7 +36,7 @@ def detect_key(progression, type_map=None):
 
 
 # Gives chord suggestions based on the detected key.
-def suggest_basic_chords(detected_key):
+def suggest_diatonic_chords(detected_key):
     if detected_key is None:
         return []
 

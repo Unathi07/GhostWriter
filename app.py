@@ -1,6 +1,6 @@
 import streamlit as st
 from piano import render_piano
-from chord_utils import get_chord_name, detect_key, suggest_basic_chords
+from chord_utils import get_chord_name, detect_key, suggest_diatonic_chords
 from music_config import ROOT_NOTES, CHORD_TYPES
 from writing_utils import build_writing_direction
 
@@ -46,7 +46,7 @@ if st.session_state.progression:
     st.write("Progression:", current_progression)
     st.write("Key:", detected_key)
 
-    suggested_chords = suggest_basic_chords(detected_key)
+    suggested_chords = suggest_diatonic_chords(detected_key)
 
     if suggested_chords:
         st.write("Suggested chords:", " -> ".join(suggested_chords))

@@ -1,4 +1,4 @@
-from chord_utils import detect_key, get_chord_name, suggest_basic_chords
+from chord_utils import detect_key, get_chord_name, suggest_diatonic_chords
 
 
 def test_get_chord_name_major_chord():
@@ -18,8 +18,8 @@ def test_detect_key_c_major_progression():
     assert detect_key(progression) == "C major"
 
 
-def test_suggest_basic_chords_returns_c_major_suggestions():
-    assert suggest_basic_chords("C major") == [
+def test_suggest_diatonic_chords_returns_c_major_suggestions():
+    assert suggest_diatonic_chords("C major") == [
         "C Major",
         "D Minor",
         "E Minor",
@@ -29,5 +29,5 @@ def test_suggest_basic_chords_returns_c_major_suggestions():
     ]
 
 
-def test_suggest_basic_chords_returns_empty_list_without_key():
-    assert suggest_basic_chords(None) == []
+def test_suggest_diatonic_chords_returns_empty_list_without_key():
+    assert suggest_diatonic_chords(None) == []
