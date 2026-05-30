@@ -16,6 +16,7 @@ The goal is to help users move from a chord progression to a song idea by combin
 - Optionally generate writing direction with OpenAI
 - Fall back to a local template when AI mode is off
 - Keep lyric notes in a scratchpad
+- Download the song draft as a text file
 
 ## Tech Stack
 
