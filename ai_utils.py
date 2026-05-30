@@ -16,6 +16,8 @@ Detected key:
 Chord progression:
 {current_progression}
 
+Format the response in Markdown.
+
 Return:
 - Song concept
 - Emotional direction
