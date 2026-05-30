@@ -159,6 +159,7 @@ use_ai = st.toggle(
     "Use AI writing direction",
     key="use_ai_writing_direction",
 )
+st.caption("AI mode requires an OpenAI API key. Template mode works without one.")
 
 # Builds a writing direction from the user's song idea and progression.
 if st.button("Build writing direction", key="build_writing_direction"):

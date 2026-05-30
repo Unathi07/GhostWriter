@@ -13,6 +13,8 @@ The goal is to help users move from a chord progression to a song idea by combin
 - Generate diatonic chord suggestions from the detected key
 - Write a free-form song idea
 - Generate a structured writing direction from the song idea and progression
+- Optionally generate writing direction with OpenAI
+- Fall back to a local template when AI mode is off
 - Keep lyric notes in a scratchpad
 
 ## Tech Stack
@@ -20,6 +22,7 @@ The goal is to help users move from a chord progression to a song idea by combin
 - Python
 - Streamlit
 - music21
+- OpenAI API
 
 ## Run Locally
 
@@ -35,6 +38,28 @@ Streamlit will print a local URL, usually:
 http://localhost:8501
 ```
 
+## Optional AI Setup
+
+GhostWriter works without an API key when AI mode is off.
+
+To use AI writing direction, create:
+
+```text
+.streamlit/secrets.toml
+```
+
+Add your OpenAI API key:
+
+```toml
+OPENAI_API_KEY = "your_real_api_key_here"
+```
+
+Do not commit `secrets.toml`. The project includes `.streamlit/secrets.example.toml`
+as a safe example file.
+
+If OpenAI returns a quota or billing error, turn off AI mode and use the local
+template mode until the account has available API credits.
+
 ## Run Tests
 
 ```powershell
@@ -45,7 +70,6 @@ http://localhost:8501
 
 Planned improvements:
 
-- Add AI-powered interpretation of song ideas
 - Save and reload song projects
 - Export progressions as MIDI
 - Separate core music logic from the Streamlit interface
