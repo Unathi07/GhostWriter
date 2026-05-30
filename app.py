@@ -4,6 +4,7 @@ from chord_utils import get_chord_name, detect_key, suggest_diatonic_chords
 from music_config import ROOT_NOTES, CHORD_TYPES, KEY_OPTIONS, PRESET_PROGRESSIONS
 from ui_components import show_progression_chords, show_add_chord_buttons
 from writing_utils import build_writing_direction
+from ai_utils import build_writing_prompt, generate_writing_direction
 
 
 st.title("GhostWriter")
@@ -187,13 +188,16 @@ if st.session_state.writing_direction:
             st.write(label + ":", value)
 
     # Template-based guidance for now; this section can later be replaced by an AI response.
-    for section, content in st.session_state.writing_direction.items():
-        if isinstance(content, list):
-            st.write(section + ":")
-            for item in content:
-                st.write("- " + item)
-        else:
-            st.write(section + ":", content)
+    if isinstance(st.session_state.writing_direction, dict):
+        for section, content in st.session_state.writing_direction.items():
+            if isinstance(content, list):
+                st.write(section + ":")
+                for item in content:
+                    st.write("- " + item)
+            else:
+                st.write(section + ":", content)
+    else:
+        st.write(st.session_state.writing_direction)
 
     if st.button("Clear writing direction", key="clear_writing_direction"):
         st.session_state.writing_direction = None
