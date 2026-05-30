@@ -152,6 +152,12 @@ song_brief = st.text_area(
     key="song_brief",
 )
 
+# Lets the user choose between the local template and the AI version.
+use_ai = st.toggle(
+    "Use AI writing direction",
+    key="use_ai_writing_direction",
+)
+
 # Builds a writing direction from the user's song idea and progression.
 if st.button("Build writing direction", key="build_writing_direction"):
     if not song_brief:
