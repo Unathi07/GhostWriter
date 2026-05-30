@@ -1,4 +1,5 @@
 import streamlit as st
+from openai import OpenAIError, RateLimitError
 from piano import render_piano
 from chord_utils import get_chord_name, detect_key, suggest_diatonic_chords
 from music_config import ROOT_NOTES, CHORD_TYPES, KEY_OPTIONS, PRESET_PROGRESSIONS
@@ -186,16 +187,31 @@ if st.button("Build writing direction", key="build_writing_direction"):
                 )
 
                 with st.spinner("Generating writing direction..."):
-                    st.session_state.writing_direction = generate_writing_direction(
-                        prompt,
-                        api_key,
-                    )
-                # Keep the context visible with the generated direction after Streamlit reruns.
-                st.session_state.writing_direction_context = {
-                    "Song idea": song_brief,
-                    "Progression": current_progression,
-                    "Detected key": detected_key,
-                }
+                    try:
+                        st.session_state.writing_direction = generate_writing_direction(
+                            prompt,
+                            api_key,
+                        )
+                    except RateLimitError:
+                        st.error(
+                            "OpenAI could not generate a response because this API "
+                            "key has no available quota. Check billing/credits or use "
+                            "template mode for now."
+                        )
+                        st.session_state.writing_direction = None
+                        st.session_state.writing_direction_context = None
+                    except OpenAIError as error:
+                        st.error("OpenAI could not generate a response.")
+                        st.caption(str(error))
+                        st.session_state.writing_direction = None
+                        st.session_state.writing_direction_context = None
+                    else:
+                        # Keep the context visible with the generated direction after Streamlit reruns.
+                        st.session_state.writing_direction_context = {
+                            "Song idea": song_brief,
+                            "Progression": current_progression,
+                            "Detected key": detected_key,
+                        }
         else:
             # Template mode keeps the app usable without an API key or internet connection.
             st.session_state.writing_direction = build_writing_direction(
