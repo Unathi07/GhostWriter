@@ -12,5 +12,6 @@ def test_build_writing_prompt():
     assert "C major" in prompt
     assert "C Major -> G Major -> A Minor -> F Major" in prompt
     assert "Format the response in Markdown" in prompt
-    assert "Song concept" in prompt
+    assert "## Song concept" in prompt
+    assert "## Questions to explore" in prompt
     assert "3 starter lyric lines" in prompt

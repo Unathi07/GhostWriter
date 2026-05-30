@@ -16,15 +16,15 @@ Detected key:
 Chord progression:
 {current_progression}
 
-Format the response in Markdown.
+Format the response in Markdown with these exact headings:
+- ## Song concept
+- ## Emotional direction
+- ## Hook idea
+- ## Verse scene
+- ## Starter lyric lines
+- ## Questions to explore
 
-Return:
-- Song concept
-- Emotional direction
-- Hook idea
-- Verse scene
-- 3 starter lyric lines
-- 3 questions to explore
+Include 3 starter lyric lines and 3 questions to explore.
 """
 
 
