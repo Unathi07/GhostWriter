@@ -243,7 +243,7 @@ if st.session_state.writing_direction:
             else:
                 st.write(section + ":", content)
     else:
-        st.write(st.session_state.writing_direction)
+        st.markdown(st.session_state.writing_direction)
 
     if st.button("Clear writing direction", key="clear_writing_direction"):
         st.session_state.writing_direction = None
