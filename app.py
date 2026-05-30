@@ -169,16 +169,45 @@ if st.button("Build writing direction", key="build_writing_direction"):
         current_progression = " -> ".join(st.session_state.progression)
         detected_key = detect_key(st.session_state.progression)
 
-        st.session_state.writing_direction = build_writing_direction(
-            song_brief,
-            detected_key,
-            current_progression,
-        )
-        st.session_state.writing_direction_context = {
-            "Song idea": song_brief,
-            "Progression": current_progression,
-            "Detected key": detected_key,
-        }
+        if use_ai:
+            # AI mode needs a private API key from .streamlit/secrets.toml.
+            api_key = st.secrets.get("OPENAI_API_KEY")
+
+            if not api_key:
+                st.warning("Add your OpenAI API key to .streamlit/secrets.toml first.")
+                st.session_state.writing_direction = None
+                st.session_state.writing_direction_context = None
+            else:
+                # The prompt turns the song idea, key, and progression into instructions for the model.
+                prompt = build_writing_prompt(
+                    song_brief,
+                    detected_key,
+                    current_progression,
+                )
+
+                with st.spinner("Generating writing direction..."):
+                    st.session_state.writing_direction = generate_writing_direction(
+                        prompt,
+                        api_key,
+                    )
+                # Keep the context visible with the generated direction after Streamlit reruns.
+                st.session_state.writing_direction_context = {
+                    "Song idea": song_brief,
+                    "Progression": current_progression,
+                    "Detected key": detected_key,
+                }
+        else:
+            # Template mode keeps the app usable without an API key or internet connection.
+            st.session_state.writing_direction = build_writing_direction(
+                song_brief,
+                detected_key,
+                current_progression,
+            )
+            st.session_state.writing_direction_context = {
+                "Song idea": song_brief,
+                "Progression": current_progression,
+                "Detected key": detected_key,
+            }
 
 if st.session_state.writing_direction:
     st.subheader("Writing direction")
