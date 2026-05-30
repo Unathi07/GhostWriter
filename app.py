@@ -6,6 +6,7 @@ from music_config import ROOT_NOTES, CHORD_TYPES, KEY_OPTIONS, PRESET_PROGRESSIO
 from ui_components import show_progression_chords, show_add_chord_buttons
 from writing_utils import build_writing_direction
 from ai_utils import build_writing_prompt, generate_writing_direction
+from export_utils import build_song_draft_export
 
 
 st.title("GhostWriter")
@@ -258,4 +259,22 @@ st.text_area(
     placeholder="Write lyric ideas, hooks, themes, or rough lines here...",
     height=220,
     key="song_notes",
+)
+
+st.divider()
+
+st.header("Export")
+exported_key = detect_key(st.session_state.progression)
+song_draft = build_song_draft_export(
+    st.session_state.progression,
+    exported_key,
+    st.session_state.writing_direction,
+    st.session_state.get("song_notes", ""),
+)
+
+st.download_button(
+    "Download song draft",
+    data=song_draft,
+    file_name="ghostwriter_song_draft.txt",
+    mime="text/plain",
 )
