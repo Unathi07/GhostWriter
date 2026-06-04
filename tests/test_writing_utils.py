@@ -15,3 +15,14 @@ def test_build_writing_direction_includes_song_context():
     assert "C Major -> G Major -> A Minor -> F Major" in direction["Emotional direction"]
     assert len(direction["Starter lyric lines"]) == 3
     assert len(direction["Questions to explore"]) == 3
+
+
+def test_build_writing_direction_handles_missing_music_context():
+    direction = build_writing_direction(
+        "I want to write about starting over",
+        "No key detected yet",
+        "No progression yet",
+    )
+
+    assert "starting over" in direction["Song concept"]
+    assert "Start from the emotion and story first" in direction["Emotional direction"]
