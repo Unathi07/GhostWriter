@@ -1,4 +1,9 @@
+from pathlib import Path
+
 import streamlit as st
+
+
+ICON_PATH = Path(__file__).parent / "assets" / "ghostwriter-icon.svg"
 
 
 def apply_theme():
@@ -8,26 +13,25 @@ def apply_theme():
         <style>
         /* main colors */
         :root {
-            --gw-bg: #f8fbff;
-            --gw-ink: #20313d;
-            --gw-muted: #6d7b86;
-            --gw-panel: rgba(255, 255, 255, 0.84);
-            --gw-panel-strong: #ffffff;
-            --gw-border: rgba(77, 116, 142, 0.18);
-            --gw-blue: #3f8fbd;
-            --gw-blue-deep: #17658d;
-            --gw-mint: #cfeee1;
-            --gw-cream: #fff5ea;
-            --gw-shadow: 0 24px 70px rgba(55, 94, 119, 0.16);
+            --gw-bg: #ffffff;
+            --gw-ink: #1a1a1a;
+            --gw-muted: #636366;
+            --gw-panel: #f2f2f7;
+            --gw-panel-strong: #e5e5ea;
+            --gw-border: #d1d1d6;
+            --gw-purple: #805ad5;
+            --gw-purple-hover: #6b46c1;
+            --gw-purple-soft: #faf5ff;
+            --gw-white: #ffffff;
+            --gw-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
-        /* soft ai page background */
+        /* light app background */
         .stApp {
-            background:
-                radial-gradient(circle at 51% 36%, rgba(181, 224, 255, 0.72) 0, rgba(181, 224, 255, 0.44) 20%, rgba(248, 251, 255, 0) 46%),
-                linear-gradient(135deg, var(--gw-cream) 0%, #f9fcff 42%, #f2faf6 100%);
+            background-color: var(--gw-bg);
             color: var(--gw-ink);
-            font-family: "Trebuchet MS", "Aptos", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-size: 0.9rem;
         }
 
         [data-testid="stHeader"] {
@@ -35,17 +39,20 @@ def apply_theme():
         }
 
         .block-container {
-            max-width: 1120px;
-            padding-top: 3.5rem;
-            padding-bottom: 3.5rem;
+            max-width: 900px;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
         }
 
         h1, h2, h3 {
             color: var(--gw-ink);
-            font-family: Georgia, "Times New Roman", serif;
-            letter-spacing: -0.04em;
-            font-weight: 500;
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
+
+        h1 { font-size: 1.8rem; }
+        h2 { font-size: 1.4rem; }
+        h3 { font-size: 1.1rem; }
 
         p, label, span, div {
             color: var(--gw-ink);
@@ -54,26 +61,25 @@ def apply_theme():
         .stCaption,
         [data-testid="stCaptionContainer"] {
             color: var(--gw-muted);
+            font-size: 0.8rem;
         }
 
         [data-testid="stSidebar"] {
-            background: rgba(255, 255, 255, 0.74);
+            background: #f8f9fa;
             border-right: 1px solid var(--gw-border);
-            box-shadow: 14px 0 45px rgba(53, 95, 126, 0.08);
-            backdrop-filter: blur(18px);
         }
 
         /* side menu */
         [data-testid="stSidebar"] > div:first-child {
-            padding-top: 1.4rem;
+            padding-top: 1rem;
         }
 
         .gw-brand {
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            gap: 0.75rem;
-            padding: 0.25rem 0 1.25rem;
+            gap: 0.5rem;
+            padding: 0 0 1rem;
             border-bottom: 1px solid var(--gw-border);
             margin-bottom: 1rem;
         }
@@ -81,192 +87,178 @@ def apply_theme():
         .gw-logo-mark {
             display: grid;
             place-items: center;
-            width: 44px;
-            height: 44px;
+            width: 32px;
+            height: 32px;
             flex: 0 0 auto;
-            border-radius: 15px;
-            background: linear-gradient(140deg, #fdfdf8 0%, #bde4ff 54%, var(--gw-mint) 100%);
-            border: 1px solid rgba(42, 112, 153, 0.18);
-            box-shadow: 0 12px 28px rgba(63, 143, 189, 0.18);
-            color: var(--gw-blue-deep);
-            font-size: 0.8rem;
-            font-weight: 850;
-            letter-spacing: 0.08em;
+        }
+
+        .gw-logo-mark svg {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
         .gw-title {
             margin: 0;
             color: var(--gw-ink);
-            font-family: Georgia, "Times New Roman", serif;
-            font-size: 1.25rem;
+            font-size: 1rem;
             line-height: 1;
             font-weight: 600;
         }
 
         .gw-tagline {
-            margin: 0.2rem 0 0;
+            margin: 0.1rem 0 0;
             color: var(--gw-muted);
-            font-size: 0.78rem;
+            font-size: 0.7rem;
         }
 
         [data-testid="stSidebar"] [role="radiogroup"] {
             display: grid;
-            gap: 0.55rem;
+            gap: 0.25rem;
         }
 
         [data-testid="stSidebar"] [role="radiogroup"] label {
-            min-height: 3rem;
-            padding: 0.4rem 0.75rem;
-            border: 1px solid var(--gw-border);
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.56);
-            box-shadow: 0 10px 26px rgba(72, 113, 143, 0.08);
+            min-height: 2.5rem;
+            padding: 0.25rem 0.75rem;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
         }
 
         [data-testid="stSidebar"] [role="radiogroup"] label:hover {
-            border-color: rgba(63, 143, 189, 0.38);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(159, 122, 234, 0.1);
+        }
+
+        [data-testid="stSidebarNavigation"] ul li:has(input:checked) {
+            background-color: rgba(159, 122, 234, 0.2);
         }
 
         .gw-sidebar-context {
-            margin-top: 1.4rem;
-            padding: 1rem;
+            margin-top: 1rem;
+            padding: 0.75rem;
             border: 1px solid var(--gw-border);
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.58);
+            border-radius: 12px;
+            background: var(--gw-panel);
         }
 
         /* little song summary */
         .gw-mini-label {
-            margin: 0 0 0.45rem;
-            color: var(--gw-blue-deep);
-            font-size: 0.72rem;
-            font-weight: 850;
-            letter-spacing: 0.14em;
+            margin: 0 0 0.25rem;
+            color: var(--gw-purple-soft);
+            font-size: 0.65rem;
+            font-weight: 600;
             text-transform: uppercase;
         }
 
         .gw-sidebar-song {
             margin: 0;
             color: var(--gw-ink);
-            font-size: 0.92rem;
-            line-height: 1.45;
+            font-size: 0.8rem;
+            line-height: 1.4;
         }
 
         .gw-sidebar-note {
-            margin: 0.45rem 0 0;
+            margin: 0.25rem 0 0;
             color: var(--gw-muted);
-            font-size: 0.78rem;
+            font-size: 0.7rem;
         }
 
         /* main ai landing area */
         .gw-hero {
-            max-width: 790px;
-            margin: 6vh auto 2.2rem;
+            max-width: 600px;
+            margin: 4vh auto 2rem;
             text-align: center;
-            animation: gwFadeUp 0.55s ease-out both;
         }
 
         .gw-ai-mark {
             display: grid;
             place-items: center;
-            width: 58px;
-            height: 58px;
-            margin: 0 auto 1.1rem;
-            border-radius: 21px;
-            color: var(--gw-blue-deep);
-            background:
-                linear-gradient(#ffffff, #ffffff) padding-box,
-                linear-gradient(140deg, #78c5ff, #cfeee1, #ffe0c0) border-box;
-            border: 2px solid transparent;
-            box-shadow: var(--gw-shadow);
-            font-size: 0.9rem;
-            font-weight: 900;
-            letter-spacing: 0.1em;
+            width: 60px;
+            height: 32px;
+            margin: 0 auto 0.75rem;
+            border-radius: 16px;
+            color: var(--gw-white);
+            background: var(--gw-purple);
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
         .gw-eyebrow {
-            margin: 0 0 0.4rem;
-            color: var(--gw-blue-deep);
-            font-size: 0.78rem;
-            font-weight: 850;
-            letter-spacing: 0.16em;
+            margin: 0 0 0.25rem;
+            color: var(--gw-purple-soft);
+            font-size: 0.7rem;
+            font-weight: 600;
             text-transform: uppercase;
         }
 
         .gw-hero h1 {
             margin: 0;
-            font-size: clamp(2.8rem, 6vw, 5.4rem);
-            line-height: 0.94;
+            font-size: 2.2rem;
+            line-height: 1.1;
         }
 
         .gw-hero-copy {
-            max-width: 560px;
-            margin: 1.1rem auto 0;
+            max-width: 480px;
+            margin: 0.75rem auto 0;
             color: var(--gw-muted);
-            font-size: 1.04rem;
-            line-height: 1.7;
+            font-size: 0.9rem;
+            line-height: 1.5;
         }
 
         .gw-page-heading {
             max-width: 720px;
-            margin-bottom: 1.8rem;
-            animation: gwFadeUp 0.5s ease-out both;
+            margin-bottom: 1.5rem;
         }
 
         .gw-page-heading h1 {
             margin: 0;
-            font-size: clamp(2.4rem, 5vw, 4.6rem);
-            line-height: 0.96;
+            font-size: 1.8rem;
         }
 
         .gw-page-heading p:last-child {
-            margin-top: 0.8rem;
+            margin-top: 0.5rem;
             color: var(--gw-muted);
-            font-size: 1.04rem;
+            font-size: 0.9rem;
         }
 
         /* make the normal streamlit buttons fit the design */
         .stButton > button,
         .stDownloadButton > button {
-            min-height: 2.9rem;
-            border-radius: 999px;
+            min-height: 2.5rem;
+            border-radius: 8px;
             border: 1px solid var(--gw-border);
             background: var(--gw-panel-strong);
             color: var(--gw-ink);
-            box-shadow: 0 10px 28px rgba(69, 102, 123, 0.1);
-            transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+            font-size: 0.85rem;
+            transition: all 0.2s;
         }
 
         .stButton > button:hover,
         .stDownloadButton > button:hover {
-            border-color: rgba(63, 143, 189, 0.6);
-            color: var(--gw-blue-deep);
-            box-shadow: 0 14px 36px rgba(63, 143, 189, 0.18);
-            transform: translateY(-1px);
+            border-color: var(--gw-purple);
+            color: var(--gw-purple-soft);
+            background: rgba(159, 122, 234, 0.05);
         }
 
         .stTextInput input,
         .stTextArea textarea,
         [data-baseweb="select"] > div {
             border-color: var(--gw-border);
-            background-color: var(--gw-panel);
-            color: var(--gw-ink);
-            border-radius: 24px;
-            box-shadow: var(--gw-shadow);
+            background-color: var(--gw-panel) !important;
+            color: var(--gw-ink) !important;
+            border-radius: 8px;
+            font-size: 0.9rem !important;
         }
 
         .stTextArea textarea {
-            padding: 1.15rem 1.25rem;
-            line-height: 1.55;
+            padding: 0.75rem;
         }
 
         [data-testid="stVerticalBlockBorderWrapper"],
         [data-testid="stExpander"] {
             border-color: var(--gw-border);
-            background: rgba(255, 255, 255, 0.68);
-            border-radius: 22px;
-            box-shadow: 0 14px 42px rgba(72, 113, 143, 0.08);
+            background: var(--gw-panel);
+            border-radius: 12px;
         }
 
         hr {
@@ -308,13 +300,15 @@ def apply_theme():
 
 def show_brand_header():
     # small logo so the sidebar does not feel crowded
+    icon_svg = ICON_PATH.read_text(encoding="utf-8")
+
     st.markdown(
-        """
+        f"""
         <div class="gw-brand">
-            <div class="gw-logo-mark">GW</div>
+            <div class="gw-logo-mark">{icon_svg}</div>
             <div>
                 <h1 class="gw-title">GhostWriter</h1>
-                <p class="gw-tagline">AI, lyrics, chords</p>
+                <p class="gw-tagline">Ghost, lyrics, chords</p>
             </div>
         </div>
         """,

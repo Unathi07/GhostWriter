@@ -2,11 +2,11 @@
 
 GhostWriter is a work-in-progress songwriting assistant built with Python and Streamlit.
 
-The goal is to help users move from a chord progression to a song idea by combining basic music theory tools with lyric brainstorming support.
+The goal is to help users move from a song idea to lyrics and chord progressions by combining basic music theory tools with lyric brainstorming support.
 
 ## Current Features
 
-- One-page workflow for moving from progression to writing direction
+- AI-first workspace with side tabs for lyrics and chords
 - Build a chord progression from root notes and chord types
 - Preview chord notes on a piano
 - Detect the key of the current progression
@@ -16,6 +16,7 @@ The goal is to help users move from a chord progression to a song idea by combin
 - Optionally generate writing direction with OpenAI
 - Fall back to a local template when AI mode is off
 - Keep lyric notes in a scratchpad
+- Save and reload song drafts with SQLite
 - Download the song draft as a text file
 
 ## Tech Stack
@@ -24,6 +25,7 @@ The goal is to help users move from a chord progression to a song idea by combin
 - Streamlit
 - music21
 - OpenAI API
+- SQLite
 
 ## Run Locally
 
@@ -67,13 +69,23 @@ template mode until the account has available API credits.
 .\.venv\Scripts\python.exe -m pytest
 ```
 
+## Local Database
+
+GhostWriter saves drafts to a local SQLite database:
+
+```text
+ghostwriter.db
+```
+
+This file is ignored by git because it is local app data.
+
 ## Project Direction
 
 Planned improvements:
 
-- Save and reload song projects
+- Delete saved drafts
 - Export progressions as MIDI
-- Separate core music logic from the Streamlit interface
+- Polish the app icon and visual identity
 
 ## Status
 
