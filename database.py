@@ -1,54 +1,77 @@
-import json
-import sqlite3
-from contextlib import closing, contextmanager
+"""Data access for saved songs.
+
+The same code runs on SQLite and Postgres. DATABASE_URL picks the backend:
+tests and local development use a SQLite file, the deployed app uses Postgres.
+Streamlit copies secrets.toml entries into the environment, so setting
+DATABASE_URL in the Streamlit Cloud secrets UI is all the deploy needs.
+"""
+
+import os
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 
+from sqlalchemy import (
+    JSON,
+    Column,
+    Integer,
+    MetaData,
+    Table,
+    Text,
+    create_engine,
+    insert,
+    select,
+    update,
+)
 
-DB_PATH = Path(__file__).parent / "ghostwriter.db"
+DEFAULT_SQLITE_PATH = Path(__file__).parent / "ghostwriter.db"
+
+metadata = MetaData()
+
+# writing_direction is a markdown string from the ai and a dict from the
+# template, so it is stored as json rather than as one fixed shape
+songs = Table(
+    "songs",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("title", Text, nullable=False),
+    Column("song_brief", Text, nullable=False),
+    Column("song_notes", Text, nullable=False),
+    Column("progression", JSON, nullable=False),
+    Column("detected_key", Text),
+    Column("writing_direction", JSON),
+    Column("writing_direction_context", JSON),
+    # iso-8601 sorts the same as text on both backends, so there is no
+    # timestamp format to migrate when moving from sqlite to postgres
+    Column("created_at", Text, nullable=False),
+    Column("updated_at", Text, nullable=False),
+)
 
 
-def get_connection(db_path=DB_PATH):
-    connection = sqlite3.connect(db_path)
-    connection.row_factory = sqlite3.Row
-    return connection
+def resolve_database_url(db_url=None):
+    if db_url:
+        # a bare filesystem path still works, so tests can pass tmp_path
+        text = str(db_url)
+        return text if "://" in text else f"sqlite:///{text}"
+
+    return os.environ.get("DATABASE_URL") or f"sqlite:///{DEFAULT_SQLITE_PATH}"
 
 
-@contextmanager
-def _reading(db_path):
-    # sqlite3's own "with connection" commits but never closes, and streamlit
-    # reruns this script constantly, so the handles would pile up all session
-    with closing(get_connection(db_path)) as connection:
-        yield connection
+@lru_cache(maxsize=None)
+def get_engine(db_url=None):
+    url = resolve_database_url(db_url)
+
+    # pool_pre_ping matters on a serverless postgres: it scales to zero when
+    # idle, so a pooled connection can already be dead by the next page load
+    return create_engine(url, pool_pre_ping=True, future=True)
 
 
-@contextmanager
-def _writing(db_path):
-    # closing() shuts the handle, the inner "with connection" commits or rolls back
-    with closing(get_connection(db_path)) as connection:
-        with connection:
-            yield connection
+def initialize_database(db_url=None):
+    metadata.create_all(get_engine(db_url))
 
 
-def initialize_database(db_path=DB_PATH):
-    # make the songs table if it is not there yet
-    with _writing(db_path) as connection:
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS songs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                song_brief TEXT NOT NULL,
-                song_notes TEXT NOT NULL,
-                progression TEXT NOT NULL,
-                detected_key TEXT,
-                writing_direction TEXT NOT NULL,
-                writing_direction_context TEXT NOT NULL,
-                created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL
-            )
-            """
-        )
+def _now():
+    return datetime.now().isoformat(timespec="seconds")
 
 
 def save_song(
@@ -60,115 +83,52 @@ def save_song(
     writing_direction,
     writing_direction_context,
     song_id=None,
-    db_path=DB_PATH,
+    db_url=None,
 ):
-    now = datetime.now().isoformat(timespec="seconds")
-    clean_title = title.strip() or "Untitled song"
-    song_data = (
-        clean_title,
-        song_brief or "",
-        song_notes or "",
-        json.dumps(progression or []),
-        detected_key,
-        json.dumps(writing_direction),
-        json.dumps(writing_direction_context),
-        now,
-    )
+    now = _now()
+    values = {
+        "title": title.strip() or "Untitled song",
+        "song_brief": song_brief or "",
+        "song_notes": song_notes or "",
+        "progression": progression or [],
+        "detected_key": detected_key,
+        "writing_direction": writing_direction,
+        "writing_direction_context": writing_direction_context,
+        "updated_at": now,
+    }
 
-    with _writing(db_path) as connection:
+    with get_engine(db_url).begin() as connection:
         if song_id:
             result = connection.execute(
-                """
-                UPDATE songs
-                SET title = ?,
-                    song_brief = ?,
-                    song_notes = ?,
-                    progression = ?,
-                    detected_key = ?,
-                    writing_direction = ?,
-                    writing_direction_context = ?,
-                    updated_at = ?
-                WHERE id = ?
-                """,
-                (*song_data, song_id),
+                update(songs).where(songs.c.id == song_id).values(**values)
             )
 
             if result.rowcount:
                 return song_id
 
-        cursor = connection.execute(
-            """
-            INSERT INTO songs (
-                title,
-                song_brief,
-                song_notes,
-                progression,
-                detected_key,
-                writing_direction,
-                writing_direction_context,
-                created_at,
-                updated_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (*song_data, now),
-        )
+        # the row was deleted while it was open, so save it as a new song
+        result = connection.execute(insert(songs).values(created_at=now, **values))
 
-        return cursor.lastrowid
+        return result.inserted_primary_key[0]
 
 
-def list_songs(db_path=DB_PATH):
-    with _reading(db_path) as connection:
-        rows = connection.execute(
-            """
-            SELECT id, title, updated_at
-            FROM songs
-            ORDER BY updated_at DESC, id DESC
-            """
-        ).fetchall()
+def list_songs(db_url=None):
+    query = (
+        select(songs.c.id, songs.c.title, songs.c.updated_at)
+        # two saves in the same second tie on updated_at, so id breaks the tie
+        .order_by(songs.c.updated_at.desc(), songs.c.id.desc())
+    )
 
-    return [
-        {
-            "id": row["id"],
-            "title": row["title"],
-            "updated_at": row["updated_at"],
-        }
-        for row in rows
-    ]
+    with get_engine(db_url).connect() as connection:
+        rows = connection.execute(query).mappings().all()
+
+    return [dict(row) for row in rows]
 
 
-def get_song(song_id, db_path=DB_PATH):
-    with _reading(db_path) as connection:
-        row = connection.execute(
-            """
-            SELECT id,
-                   title,
-                   song_brief,
-                   song_notes,
-                   progression,
-                   detected_key,
-                   writing_direction,
-                   writing_direction_context,
-                   created_at,
-                   updated_at
-            FROM songs
-            WHERE id = ?
-            """,
-            (song_id,),
-        ).fetchone()
+def get_song(song_id, db_url=None):
+    query = select(songs).where(songs.c.id == song_id)
 
-    if not row:
-        return None
+    with get_engine(db_url).connect() as connection:
+        row = connection.execute(query).mappings().first()
 
-    return {
-        "id": row["id"],
-        "title": row["title"],
-        "song_brief": row["song_brief"],
-        "song_notes": row["song_notes"],
-        "progression": json.loads(row["progression"]),
-        "detected_key": row["detected_key"],
-        "writing_direction": json.loads(row["writing_direction"]),
-        "writing_direction_context": json.loads(row["writing_direction_context"]),
-        "created_at": row["created_at"],
-        "updated_at": row["updated_at"],
-    }
+    return dict(row) if row else None

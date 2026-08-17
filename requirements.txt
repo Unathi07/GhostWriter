@@ -2,3 +2,5 @@ music21==9.9.1
 pytest==9.0.3
 streamlit==1.56.0
 openai==2.38.0
+SQLAlchemy==2.0.52
+psycopg2-binary==2.9.12
