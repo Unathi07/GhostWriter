@@ -8,5 +8,4 @@ streamlit.out.log
 
 __pycache__/
 *.pyc
-.streamlit
 ghostwriter.db

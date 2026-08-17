@@ -13,7 +13,7 @@ The goal is to help users move from a song idea to lyrics and chord progressions
 - Generate diatonic chord suggestions from the detected key
 - Write a free-form song idea
 - Generate a structured writing direction from the song idea and progression
-- Optionally generate writing direction with OpenAI
+- Optionally generate writing direction with the Gemini API (free tier)
 - Fall back to a local template when AI mode is off
 - Keep lyric notes in a scratchpad
 - Save and reload song drafts with SQLite
@@ -24,7 +24,7 @@ The goal is to help users move from a song idea to lyrics and chord progressions
 - Python
 - Streamlit
 - music21
-- OpenAI API
+- Gemini API (via the OpenAI-compatible endpoint)
 - SQLite
 
 ## Run Locally
@@ -51,17 +51,26 @@ To use AI writing direction, create:
 .streamlit/secrets.toml
 ```
 
-Add your OpenAI API key:
+Add your Gemini API key:
 
 ```toml
-OPENAI_API_KEY = "your_real_api_key_here"
+GEMINI_API_KEY = "your_real_api_key_here"
 ```
+
+Get a free key from [Google AI Studio](https://aistudio.google.com/apikey). The
+free tier does not require a payment method. GhostWriter talks to Gemini through
+its OpenAI-compatible endpoint, so the `openai` client library is still used —
+only the base URL and model name differ.
 
 Do not commit `secrets.toml`. The project includes `.streamlit/secrets.example.toml`
 as a safe example file.
 
-If OpenAI returns a quota or billing error, turn off AI mode and use the local
-template mode until the account has available API credits.
+Free tier models are shared and sometimes return `503 UNAVAILABLE` when they are
+busy. GhostWriter handles this automatically: it retries, then falls back through
+the model list in `ai_utils.GEMINI_MODELS` before giving up.
+
+If it still fails, the free tier is either busy or out of quota for now. Wait a
+moment or turn off AI mode and use the local template mode.
 
 ## Run Tests
 
