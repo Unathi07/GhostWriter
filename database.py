@@ -1,3 +1,11 @@
+"""Data access for saved songs.
+
+The same code runs on SQLite and Postgres. DATABASE_URL picks the backend:
+tests and local development use a SQLite file, the deployed app uses Postgres.
+Streamlit copies secrets.toml entries into the environment, so setting
+DATABASE_URL in the Streamlit Cloud secrets UI is all the deploy needs.
+"""
+
 import os
 from datetime import datetime
 from functools import lru_cache
@@ -11,8 +19,10 @@ from sqlalchemy import (
     Table,
     Text,
     create_engine,
+    inspect,
     insert,
     select,
+    text,
     update,
 )
 
@@ -33,6 +43,10 @@ songs = Table(
     Column("detected_key", Text),
     Column("writing_direction", JSON),
     Column("writing_direction_context", JSON),
+    # "gemini" or "template", so a reloaded draft still says where it came from
+    Column("direction_source", Text),
+    # the brainstorming conversation, as a list of {role, content}
+    Column("chat_messages", JSON),
     # iso-8601 sorts the same as text on both backends, so there is no
     # timestamp format to migrate when moving from sqlite to postgres
     Column("created_at", Text, nullable=False),
@@ -58,8 +72,31 @@ def get_engine(db_url=None):
     return create_engine(url, pool_pre_ping=True, future=True)
 
 
+def _add_missing_columns(engine):
+    """create_all() never alters an existing table, so new nullable columns have
+    to be added by hand for databases that were made by an older version."""
+    inspector = inspect(engine)
+
+    if not inspector.has_table(songs.name):
+        return
+
+    existing = {column["name"] for column in inspector.get_columns(songs.name)}
+    missing = [column for column in songs.columns if column.name not in existing]
+
+    for column in missing:
+        column_type = column.type.compile(engine.dialect)
+        # the names come from our own metadata, never from user input
+        statement = text(
+            f"ALTER TABLE {songs.name} ADD COLUMN {column.name} {column_type}"
+        )
+        with engine.begin() as connection:
+            connection.execute(statement)
+
+
 def initialize_database(db_url=None):
-    metadata.create_all(get_engine(db_url))
+    engine = get_engine(db_url)
+    _add_missing_columns(engine)
+    metadata.create_all(engine)
 
 
 def _now():
@@ -74,6 +111,8 @@ def save_song(
     detected_key,
     writing_direction,
     writing_direction_context,
+    direction_source=None,
+    chat_messages=None,
     song_id=None,
     db_url=None,
 ):
@@ -86,6 +125,8 @@ def save_song(
         "detected_key": detected_key,
         "writing_direction": writing_direction,
         "writing_direction_context": writing_direction_context,
+        "direction_source": direction_source,
+        "chat_messages": chat_messages or [],
         "updated_at": now,
     }
 

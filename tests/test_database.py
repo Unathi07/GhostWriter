@@ -94,3 +94,72 @@ def test_untitled_song_gets_a_default_title(db_url):
 
 def test_get_song_returns_none_when_missing(db_url):
     assert get_song(999999, db_url) is None
+
+
+def test_direction_source_round_trips(db_url):
+    song_id = save_song(
+        "AI draft", "", "", [], None, "markdown direction", None,
+        "gemini", db_url=db_url,
+    )
+
+    assert get_song(song_id, db_url)["direction_source"] == "gemini"
+
+
+def test_missing_columns_are_added_to_an_older_database(tmp_path):
+    # a database created before direction_source existed must keep working
+    import sqlalchemy as sa
+
+    if SHARED_DB_URL:
+        pytest.skip("this test builds its own sqlite file")
+
+    url = f"sqlite:///{tmp_path}/old.db"
+    engine = get_engine(url)
+    older = sa.Table(
+        "songs",
+        sa.MetaData(),
+        *[
+            sa.Column(c.name, c.type, primary_key=c.primary_key, nullable=c.nullable)
+            for c in songs.columns
+            if c.name != "direction_source"
+        ],
+    )
+    older.create(engine)
+    with engine.begin() as connection:
+        connection.execute(
+            older.insert().values(
+                title="old song", song_brief="", song_notes="", progression=[],
+                detected_key=None, writing_direction="old direction",
+                writing_direction_context=None,
+                created_at="2026-06-01T10:00:00", updated_at="2026-06-01T10:00:00",
+            )
+        )
+
+    initialize_database(url)
+
+    old_song = get_song(1, url)
+    assert old_song["writing_direction"] == "old direction"
+    assert old_song["direction_source"] is None
+
+    new_id = save_song(
+        "new song", "", "", [], None, "d", None, "template", db_url=url
+    )
+    assert get_song(new_id, url)["direction_source"] == "template"
+
+
+def test_chat_messages_round_trip(db_url):
+    conversation = [
+        {"role": "user", "content": "what is this song about?"},
+        {"role": "assistant", "content": "Sounds like distance."},
+    ]
+    song_id = save_song(
+        "Chatty draft", "", "", [], None, None, None, "gemini",
+        conversation, db_url=db_url,
+    )
+
+    assert get_song(song_id, db_url)["chat_messages"] == conversation
+
+
+def test_chat_messages_default_to_empty(db_url):
+    song_id = save_song("No chat", "", "", [], None, None, None, db_url=db_url)
+
+    assert get_song(song_id, db_url)["chat_messages"] == []
