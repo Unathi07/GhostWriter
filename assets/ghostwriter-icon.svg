@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">GhostWriter app icon</title>
+  <desc id="desc">A white pacman-like ghost wearing purple headphones and whistling purple crotchets.</desc>
+  <defs>
+    <linearGradient id="gw-bg" x1="70" y1="58" x2="442" y2="456" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#000000"/>
+      <stop offset="1" stop-color="#9f7aea"/>
+    </linearGradient>
+    <filter id="gw-shadow" x="72" y="72" width="370" height="372" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="26" stdDeviation="24" flood-color="#000000" flood-opacity="0.46"/>
+    </filter>
+  </defs>
+
+  <rect x="24" y="24" width="464" height="464" rx="116" fill="#f8f9fa"/>
+  <circle cx="386" cy="116" r="68" fill="#805ad5" opacity="0.15"/>
+  <circle cx="130" cy="388" r="82" fill="#1a1a1a" opacity="0.05"/>
+
+  <!-- headphones -->
+  <path d="M151 232C151 143 196 92 256 92C316 92 361 143 361 232" fill="none" stroke="#805ad5" stroke-width="24" stroke-linecap="round"/>
+  <rect x="121" y="219" width="48" height="96" rx="23" fill="#805ad5"/>
+  <rect x="343" y="219" width="48" height="96" rx="23" fill="#805ad5"/>
+  <rect x="133" y="233" width="25" height="68" rx="12" fill="#ffffff" opacity="0.8"/>
+  <rect x="354" y="233" width="25" height="68" rx="12" fill="#ffffff" opacity="0.8"/>
+
+  <!-- ghost -->
+  <path
+    filter="url(#gw-shadow)"
+    d="M145 356V213C145 148 193 112 256 112C319 112 367 148 367 213V356L330 335L298 381L256 343L214 381L182 335Z"
+    fill="#ffffff"
+    stroke="#d1d1d6"
+    stroke-width="2"
+  />
+
+  <!-- pacman-like whistling mouth cutout -->
+  <path d="M278 247L345 215V279Z" fill="#000000"/>
+  <circle cx="223" cy="223" r="16" fill="#000000"/>
+
+  <!-- whistled crotchets -->
+  <path d="M362 186V132L415 121V141L383 148V199Z" fill="#d6bcfa"/>
+  <ellipse cx="352" cy="199" rx="20" ry="14" transform="rotate(-20 352 199)" fill="#d6bcfa"/>
+  <path d="M398 274V220L449 209V229L420 235V287Z" fill="#9f7aea"/>
+  <ellipse cx="388" cy="287" rx="19" ry="13" transform="rotate(-20 388 287)" fill="#9f7aea"/>
+
+  <path d="M128 152C151 124 180 108 215 104" fill="none" stroke="#ffffff" stroke-width="15" stroke-linecap="round" opacity="0.34"/>
+</svg>
