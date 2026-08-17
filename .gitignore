@@ -9,3 +9,5 @@ streamlit.out.log
 __pycache__/
 *.pyc
 ghostwriter.db
+
+.idea/
