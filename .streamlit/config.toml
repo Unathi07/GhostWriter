@@ -1,0 +1,33 @@
+# GhostWriter theme.
+#
+# Streamlit reads this natively, so its own widgets - toggles, spinners,
+# sliders, focus rings, alerts - use the brand palette instead of the default
+# red (#ff4b4b). Anything expressible here belongs here rather than in the CSS
+# override in ui_components.py, because CSS cannot reach inside every widget.
+
+[theme]
+base = "light"
+
+primaryColor = "#805ad5"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f2f2f7"
+textColor = "#1a1a1a"
+borderColor = "#d1d1d6"
+linkColor = "#6b46c1"
+
+# 0.5rem is the 8px radius the buttons and inputs already use
+baseRadius = "0.5rem"
+buttonRadius = "0.5rem"
+codeBackgroundColor = "#f2f2f7"
+
+# alert colours. streamlit derives the matching background and text shades from
+# each of these, so only the base colour needs setting.
+redColor = "#c53030"
+orangeColor = "#b7791f"
+greenColor = "#2f855a"
+violetColor = "#805ad5"
+blueColor = "#2b6cb0"
+
+[theme.sidebar]
+backgroundColor = "#f7f7fa"
+borderColor = "#d1d1d6"

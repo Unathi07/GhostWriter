@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="GhostWriter">
+  <defs>
+    <mask id="gw-quaver" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#000"/>
+      <path d="M296 112 C352 144 390 180 390 226 C390 252 376 272 352 284
+               C368 258 360 230 334 208 C322 197 308 187 296 179 Z" fill="#fff"/>
+      <rect x="272" y="104" width="30" height="214" rx="15" fill="#fff"/>
+      <path d="M96 390 V320 C96 258 141 216 200 216 C259 216 304 258 304 320 V390
+               L268 362 L232 390 L196 362 L160 390 L124 362 Z" fill="#fff"/>
+      <circle cx="170" cy="308" r="24" fill="#000"/>
+      <circle cx="242" cy="308" r="24" fill="#000"/>
+    </mask>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="#805ad5"/>
+  <rect width="512" height="512" fill="#ffffff" mask="url(#gw-quaver)"/>
+</svg>

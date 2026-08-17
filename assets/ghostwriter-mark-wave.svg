@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="GhostWriter">
+  <defs>
+    <mask id="gw-wave" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#000"/>
+      <path d="M106 400 V248 C106 166 173 108 256 108 C339 108 406 166 406 248 V400
+               L354 366 L302 400 L250 366 L198 400 L146 366 Z" fill="#fff"/>
+      <g stroke="#000" stroke-width="28" stroke-linecap="round">
+        <path d="M178 246 V286"/>
+        <path d="M232 206 V326"/>
+        <path d="M286 228 V304"/>
+        <path d="M334 250 V282"/>
+      </g>
+    </mask>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="#805ad5"/>
+  <rect width="512" height="512" fill="#ffffff" mask="url(#gw-wave)"/>
+</svg>

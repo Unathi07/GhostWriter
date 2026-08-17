@@ -3,7 +3,7 @@ from html import escape
 import streamlit as st
 from openai import APIStatusError, OpenAIError, RateLimitError
 
-from ai_utils import build_writing_prompt, generate_writing_direction
+from ai_utils import build_writing_prompt, chat_with_ghost, generate_writing_direction
 from app_state import (
     get_detected_key,
     get_key_text,
@@ -17,6 +17,8 @@ from export_utils import build_song_draft_export
 from music_config import CHORD_TYPES, KEY_OPTIONS, PRESET_PROGRESSIONS, ROOT_NOTES
 from piano import render_piano
 from ui_components import (
+    ICON_PATH,
+    USER_ICON_PATH,
     show_add_chord_buttons,
     show_brand_header,
     show_empty_state,
@@ -36,6 +38,8 @@ def _save_current_song(song_id=None):
         get_detected_key(),
         st.session_state.get("writing_direction"),
         st.session_state.get("writing_direction_context"),
+        st.session_state.get("direction_source"),
+        st.session_state.get("chat_messages"),
         song_id=song_id,
     )
     saved_song = get_song(saved_song_id)
@@ -66,12 +70,7 @@ def render_sidebar():
 
         workspace = st.radio(
             "Workspace",
-            ("Ghost", "Lyrics", "Chords"),
-            format_func=lambda option: {
-                "Ghost": "Ghost",
-                "Lyrics": "Lyrics",
-                "Chords": "Chords",
-            }[option],
+            ("Ghost", "Brainstorm", "Lyrics", "Chords"),
             label_visibility="collapsed",
             key="workspace",
         )
@@ -145,6 +144,10 @@ def render_direction():
 
     if st.session_state.get("writing_direction_note"):
         st.caption(st.session_state.writing_direction_note)
+    elif st.session_state.get("direction_source"):
+        # a reloaded draft has no note, so fall back to the stored source
+        source_labels = {"gemini": "Written by Gemini.", "template": "Written by the built-in template."}
+        st.caption(source_labels.get(st.session_state.direction_source, ""))
 
     # showing what the ai/template used so I can remember the context
     if st.session_state.writing_direction_context:
@@ -175,6 +178,7 @@ def render_direction():
         st.session_state.writing_direction = None
         st.session_state.writing_direction_context = None
         st.session_state.writing_direction_note = None
+        st.session_state.direction_source = None
         st.rerun()
 
 
@@ -239,6 +243,9 @@ def _build_direction(song_brief):
             detected_key_text,
             progression_text,
         )
+        st.session_state.direction_source = "template"
+    else:
+        st.session_state.direction_source = "gemini"
 
     st.session_state.writing_direction = direction
     st.session_state.writing_direction_note = note
@@ -496,3 +503,96 @@ def render_chords_workspace():
             show_empty_state(
                 "No chords yet. Pick a key or a preset to start the progression."
             )
+
+
+# streamlit's default user avatar is red, which is off-palette
+CHAT_AVATARS = {"assistant": str(ICON_PATH), "user": str(USER_ICON_PATH)}
+
+CHAT_STARTERS = (
+    "What is this song really about?",
+    "Give me three hook lines",
+    "What should the second verse do?",
+)
+
+
+def _ghost_reply(question):
+    """Append the question, ask Ghost, append the answer. Returns an error string
+    when the model could not be reached, so the caller can show it."""
+    st.session_state.chat_messages.append({"role": "user", "content": question})
+
+    api_key = _read_api_key()
+    if not api_key:
+        return (
+            "Brainstorming needs a Gemini API key, because there is no template "
+            "for an open conversation. Add one to .streamlit/secrets.toml."
+        )
+
+    with st.spinner("Ghost is thinking..."):
+        try:
+            reply = chat_with_ghost(
+                st.session_state.chat_messages,
+                api_key,
+                st.session_state.get("song_brief", ""),
+                get_key_text(),
+                get_progression_text(),
+            )
+        except RateLimitError:
+            return "Gemini's free tier rate limit was hit. Wait a moment and try again."
+        except APIStatusError as error:
+            if error.status_code in (500, 502, 503):
+                return "The free Gemini models are all busy. Try again in a moment."
+
+            return "Gemini could not answer that one."
+        except OpenAIError:
+            return "Gemini could not answer that one."
+
+    st.session_state.chat_messages.append({"role": "assistant", "content": reply})
+    return None
+
+
+def render_brainstorm_workspace():
+    # a conversation, where the Ghost tab gives a one-shot direction
+    st.markdown(
+        """
+        <div class="gw-page-heading">
+            <h1>Brainstorm with Ghost</h1>
+            <p>Talk the song through. Ghost knows your idea, key, and progression.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if not st.session_state.chat_messages:
+        show_empty_state(
+            "No conversation yet. Ask a question below, or start with one of these."
+        )
+
+        starter_columns = st.columns(len(CHAT_STARTERS))
+        for column, starter in zip(starter_columns, CHAT_STARTERS):
+            with column:
+                if st.button(starter, key=f"starter_{starter}", use_container_width=True):
+                    st.session_state.pending_question = starter
+                    st.rerun()
+
+    for message in st.session_state.chat_messages:
+        with st.chat_message(message["role"], avatar=CHAT_AVATARS.get(message["role"])):
+            st.markdown(message["content"])
+
+    question = st.chat_input("Ask Ghost about the song...")
+
+    # a starter button click is handled on the next run, like a typed question
+    pending = st.session_state.pop("pending_question", None)
+    question = question or pending
+
+    if question:
+        error = _ghost_reply(question)
+        if error:
+            st.session_state.chat_messages.append(
+                {"role": "assistant", "content": error}
+            )
+        st.rerun()
+
+    if st.session_state.chat_messages:
+        if st.button("Clear conversation", key="clear_chat"):
+            st.session_state.chat_messages = []
+            st.rerun()

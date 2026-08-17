@@ -10,6 +10,8 @@ def initialize_session_state():
         "writing_direction": None,
         "writing_direction_context": None,
         "writing_direction_note": None,
+        "direction_source": None,
+        "chat_messages": [],
         "song_notes": "",
         "song_brief": "",
         "song_title": "Untitled song",
@@ -52,6 +54,8 @@ def load_song_into_session(song):
     st.session_state.progression = song["progression"]
     st.session_state.writing_direction = song["writing_direction"]
     st.session_state.writing_direction_context = song["writing_direction_context"]
+    st.session_state.direction_source = song["direction_source"]
+    st.session_state.chat_messages = song["chat_messages"] or []
     st.session_state.writing_direction_note = None
     st.session_state.last_saved_at = song["updated_at"]
 
@@ -65,5 +69,7 @@ def start_new_song():
     st.session_state.progression = []
     st.session_state.writing_direction = None
     st.session_state.writing_direction_context = None
+    st.session_state.direction_source = None
     st.session_state.writing_direction_note = None
+    st.session_state.chat_messages = []
     st.session_state.last_saved_at = None

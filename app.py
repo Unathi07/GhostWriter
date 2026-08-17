@@ -5,6 +5,7 @@ from database import initialize_database
 from ui_components import ICON_PATH, apply_theme
 from workspace_views import (
     render_ai_workspace,
+    render_brainstorm_workspace,
     render_chords_workspace,
     render_lyrics_workspace,
     render_sidebar,
@@ -27,6 +28,8 @@ selected_workspace = render_sidebar()
 
 if selected_workspace == "Ghost":
     render_ai_workspace()
+elif selected_workspace == "Brainstorm":
+    render_brainstorm_workspace()
 elif selected_workspace == "Lyrics":
     render_lyrics_workspace()
 else:
