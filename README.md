@@ -13,8 +13,8 @@ The goal is to help users move from a song idea to lyrics and chord progressions
 - Generate diatonic chord suggestions from the detected key
 - Write a free-form song idea
 - Generate a structured writing direction from the song idea and progression
-- Optionally generate writing direction with the Gemini API (free tier)
-- Fall back to a local template when AI mode is off
+- Generate writing direction with the Gemini API (free tier)
+- Fall back to a built-in template automatically when Gemini is unavailable
 - Keep lyric notes in a scratchpad
 - Save and reload song drafts with SQLite
 - Download the song draft as a text file
@@ -43,7 +43,8 @@ http://localhost:8501
 
 ## Optional AI Setup
 
-GhostWriter works without an API key when AI mode is off.
+GhostWriter runs without an API key. Ghost falls back to a built-in writing
+template and says so, so the app never dead-ends on a missing key.
 
 To use AI writing direction, create:
 
@@ -67,10 +68,10 @@ as a safe example file.
 
 Free tier models are shared and sometimes return `503 UNAVAILABLE` when they are
 busy. GhostWriter handles this automatically: it retries, then falls back through
-the model list in `ai_utils.GEMINI_MODELS` before giving up.
+the model list in `ai_utils.GEMINI_MODELS`.
 
-If it still fails, the free tier is either busy or out of quota for now. Wait a
-moment or turn off AI mode and use the local template mode.
+If every model is busy, Ghost uses its built-in template instead and notes that
+on the page, so a visitor always gets a writing direction.
 
 ## Run Tests
 

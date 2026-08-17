@@ -41,3 +41,22 @@ PRESET_PROGRESSIONS = {
     "R&B": ["A Minor 7th", "D Minor 7th", "G 7th", "C Major 7th"],
     "Hopeful": ["C Major", "F Major", "A Minor", "G Major"],
 }
+
+# Long chord names wrap inside the button grid and blow up the row height, so
+# the buttons show a short label while the progression still stores the full
+# name that chord_utils and TYPE_MAP expect.
+SHORT_CHORD_TYPES = {
+    "Diminished": "dim",
+    "Augmented": "aug",
+    "Suspended": "sus",
+    "Major 7th": "maj7",
+    "Minor 7th": "min7",
+    "Major 9th": "maj9",
+    "Minor 9th": "min9",
+}
+
+
+def short_chord_label(chord_name):
+    root_note, _, chord_type = chord_name.partition(" ")
+
+    return f"{root_note} {SHORT_CHORD_TYPES.get(chord_type, chord_type)}"

@@ -1,6 +1,9 @@
+from html import escape
 from pathlib import Path
 
 import streamlit as st
+
+from music_config import short_chord_label
 
 
 ICON_PATH = Path(__file__).parent / "assets" / "ghostwriter-mark-quaver.svg"
@@ -152,11 +155,13 @@ def apply_theme():
         }
 
         /* little song summary */
+        /* same treatment as .gw-fact-label - both are a label above a value */
         .gw-mini-label {
             margin: 0 0 0.25rem;
-            color: var(--gw-purple-ink);
+            color: var(--gw-muted);
             font-size: 0.65rem;
             font-weight: 600;
+            letter-spacing: 0.07em;
             text-transform: uppercase;
         }
 
@@ -175,9 +180,9 @@ def apply_theme():
 
         /* main ai landing area */
         .gw-hero {
-            max-width: 600px;
-            margin: 4vh auto 2rem;
-            text-align: center;
+            max-width: 640px;
+            margin: 2vh 0 2.25rem;
+            text-align: left;
         }
 
         .gw-ai-mark {
@@ -185,7 +190,7 @@ def apply_theme():
             place-items: center;
             width: 60px;
             height: 32px;
-            margin: 0 auto 0.75rem;
+            margin: 0 0 0.9rem;
             border-radius: 16px;
             color: var(--gw-white);
             background: var(--gw-purple);
@@ -208,8 +213,8 @@ def apply_theme():
         }
 
         .gw-hero-copy {
-            max-width: 480px;
-            margin: 0.75rem auto 0;
+            max-width: 520px;
+            margin: 0.75rem 0 0;
             color: var(--gw-muted);
             font-size: 0.9rem;
             line-height: 1.5;
@@ -235,6 +240,9 @@ def apply_theme():
         .stButton > button,
         .stDownloadButton > button {
             min-height: 2.5rem;
+            padding: 0 0.6rem;
+            /* chord names were splitting across lines in narrow columns */
+            white-space: nowrap;
             border-radius: 8px;
             border: 1px solid var(--gw-border);
             background: var(--gw-panel-strong);
@@ -253,6 +261,7 @@ def apply_theme():
         /* the override above also caught type="primary" buttons, which left the
            app with no visually primary action - give them the brand purple back */
         .stButton > button[kind="primary"] {
+            min-height: 2.75rem;
             border-color: var(--gw-purple);
             background: var(--gw-purple);
             font-weight: 600;
@@ -283,7 +292,9 @@ def apply_theme():
         }
 
         .stTextArea textarea {
-            padding: 0.75rem;
+            padding: 1rem 1.1rem;
+            border-radius: 14px;
+            line-height: 1.5;
         }
 
         [data-testid="stVerticalBlockBorderWrapper"],
@@ -295,6 +306,84 @@ def apply_theme():
 
         hr {
             border-color: var(--gw-border);
+        }
+
+        /* quiet section labels, so side panels stop competing with headings */
+        .gw-section-label {
+            margin: 0 0 0.7rem;
+            color: var(--gw-muted);
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* label-above-value cards, so panels read as data instead of prose */
+        .gw-card {
+            padding: 1.1rem 1.15rem;
+            border: 1px solid var(--gw-border);
+            border-radius: 14px;
+            background: var(--gw-panel);
+        }
+
+        .gw-fact + .gw-fact {
+            margin-top: 0.95rem;
+        }
+
+        .gw-fact-label {
+            margin: 0 0 0.15rem;
+            color: var(--gw-muted);
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+        }
+
+        .gw-fact-value {
+            margin: 0;
+            color: var(--gw-ink);
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+
+        .gw-fact-value.is-empty {
+            color: var(--gw-muted);
+        }
+
+        /* empty states in the brand palette instead of streamlit's blue info box */
+        .gw-empty {
+            padding: 1.75rem 1.25rem;
+            border: 1px dashed var(--gw-border);
+            border-radius: 14px;
+            background: var(--gw-purple-tint);
+            color: var(--gw-muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .gw-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .gw-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.42rem 0.8rem;
+            border: 1px solid var(--gw-border);
+            border-radius: 999px;
+            background: var(--gw-white);
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+
+        .gw-chip-index {
+            color: var(--gw-muted);
+            font-size: 0.68rem;
+            font-variant-numeric: tabular-nums;
         }
 
         /* little fade-in */
@@ -348,14 +437,53 @@ def show_brand_header():
     )
 
 
-def show_progression_chords(progression):
-    # chord blocks are easier to read than one long line
-    chord_columns = st.columns(4)
+def show_section_label(text):
+    # quieter than a markdown heading, so panels sit below the page title
+    st.markdown(
+        f'<p class="gw-section-label">{escape(text)}</p>',
+        unsafe_allow_html=True,
+    )
 
+
+def show_fact_card(facts):
+    # facts is a list of (label, value, has_value) so blanks can read quieter
+    rows = []
+    for label, value, has_value in facts:
+        modifier = "" if has_value else " is-empty"
+        rows.append(
+            f'<div class="gw-fact">'
+            f'<p class="gw-fact-label">{escape(label)}</p>'
+            f'<p class="gw-fact-value{modifier}">{escape(str(value))}</p>'
+            f"</div>"
+        )
+
+    st.markdown(
+        f'<div class="gw-card">{"".join(rows)}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def show_empty_state(message):
+    st.markdown(
+        f'<div class="gw-empty">{escape(message)}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def show_progression_chords(progression):
+    # chips wrap on their own, where fixed columns broke chord names mid-word
+    chips = []
     for index, chord_name in enumerate(progression):
-        with chord_columns[index % 4]:
-            with st.container(border=True):
-                st.markdown(f"**{index + 1}. {chord_name}**")
+        chips.append(
+            '<span class="gw-chip">'
+            f'<span class="gw-chip-index">{index + 1}</span>'
+            f"{escape(chord_name)}</span>"
+        )
+
+    st.markdown(
+        f'<div class="gw-chips">{"".join(chips)}</div>',
+        unsafe_allow_html=True,
+    )
 
 
 def show_add_chord_buttons(chords, key_prefix):
@@ -367,6 +495,12 @@ def show_add_chord_buttons(chords, key_prefix):
         button_key = f"{key_prefix}_{index}_{chord_name}"
 
         with chord_columns[index % 4]:
-            if st.button(chord_name, key=button_key):
+            # the button shows a short label so long names do not wrap and
+            # blow up the row height, but the full name is what gets stored
+            if st.button(
+                short_chord_label(chord_name),
+                key=button_key,
+                use_container_width=True,
+            ):
                 st.session_state.progression.append(chord_name)
                 st.rerun()

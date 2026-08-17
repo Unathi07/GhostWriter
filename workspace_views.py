@@ -19,7 +19,10 @@ from piano import render_piano
 from ui_components import (
     show_add_chord_buttons,
     show_brand_header,
+    show_empty_state,
+    show_fact_card,
     show_progression_chords,
+    show_section_label,
 )
 from writing_utils import build_writing_direction
 
@@ -138,7 +141,10 @@ def render_direction():
     if not st.session_state.writing_direction:
         return
 
-    st.markdown("### Writing direction")
+    show_section_label("Writing direction")
+
+    if st.session_state.get("writing_direction_note"):
+        st.caption(st.session_state.writing_direction_note)
 
     # showing what the ai/template used so I can remember the context
     if st.session_state.writing_direction_context:
@@ -168,6 +174,7 @@ def render_direction():
     if st.button("Clear direction", key="clear_writing_direction"):
         st.session_state.writing_direction = None
         st.session_state.writing_direction_context = None
+        st.session_state.writing_direction_note = None
         st.rerun()
 
 
@@ -180,60 +187,61 @@ def _read_api_key():
         return None
 
 
-def _build_direction(song_brief, use_ai):
+def _fetch_ai_direction(song_brief, progression_text, detected_key_text):
+    """Ask Gemini for a direction. Returns (direction, note).
+
+    direction is None when the model could not answer, and note explains why so
+    the page can say what happened before falling back to the template.
+    """
+    api_key = _read_api_key()
+
+    if not api_key:
+        return None, "No Gemini API key is set, so Ghost used its built-in template."
+
+    prompt = build_writing_prompt(song_brief, detected_key_text, progression_text)
+
+    with st.spinner("Ghost is writing..."):
+        try:
+            return generate_writing_direction(prompt, api_key), None
+        except RateLimitError:
+            return None, (
+                "Gemini's free tier rate limit was hit, so Ghost used its "
+                "built-in template."
+            )
+        except APIStatusError as error:
+            if error.status_code in (500, 502, 503):
+                return None, (
+                    "The free Gemini models are all busy, so Ghost used its "
+                    "built-in template. Try again in a moment for an AI answer."
+                )
+
+            return None, "Gemini could not answer, so Ghost used its built-in template."
+        except OpenAIError:
+            return None, "Gemini could not answer, so Ghost used its built-in template."
+
+
+def _build_direction(song_brief):
     # this can start with just an idea, then use chords later
     progression_text = get_progression_text()
     detected_key_text = get_key_text()
 
-    if use_ai:
-        api_key = _read_api_key()
+    direction, note = _fetch_ai_direction(
+        song_brief,
+        progression_text,
+        detected_key_text,
+    )
 
-        if not api_key:
-            st.warning("Add your Gemini API key to .streamlit/secrets.toml first.")
-            return
-
-        # making the prompt separately keeps this part cleaner
-        prompt = build_writing_prompt(
+    # the template keeps the app useful when the free tier is busy or unset,
+    # so a visitor always gets a direction instead of an error
+    if direction is None:
+        direction = build_writing_direction(
             song_brief,
             detected_key_text,
             progression_text,
         )
 
-        with st.spinner("Ghost is writing..."):
-            try:
-                st.session_state.writing_direction = generate_writing_direction(
-                    prompt,
-                    api_key,
-                )
-            except RateLimitError:
-                st.error(
-                    "Gemini could not generate a response because the free tier rate "
-                    "limit was hit. Wait a moment or use template mode."
-                )
-                return
-            except APIStatusError as error:
-                if error.status_code in (500, 502, 503):
-                    st.error(
-                        "The free Gemini models are all busy right now. This is "
-                        "temporary, so try again in a moment or use template mode."
-                    )
-                    return
-
-                st.error("Gemini could not generate a response.")
-                st.caption(str(error))
-                return
-            except OpenAIError as error:
-                st.error("Gemini could not generate a response.")
-                st.caption(str(error))
-                return
-    else:
-        # backup mode for when I do not want to use an api key
-        st.session_state.writing_direction = build_writing_direction(
-            song_brief,
-            detected_key_text,
-            progression_text,
-        )
-
+    st.session_state.writing_direction = direction
+    st.session_state.writing_direction_note = note
     st.session_state.writing_direction_context = {
         "Song idea": song_brief,
         "Progression": progression_text,
@@ -272,35 +280,37 @@ def render_ai_workspace():
             label_visibility="collapsed",
         )
 
-        action_column, mode_column = st.columns([1, 1.4])
+        action_column, _ = st.columns([1, 1.4])
         with action_column:
+            # this is the one action the whole page exists for
             generate_clicked = st.button(
                 "Ask Ghost",
                 key="build_writing_direction",
+                type="primary",
                 use_container_width=True,
             )
-        with mode_column:
-            use_ai = st.toggle(
-                "Use Ghost AI response",
-                key="use_ai_writing_direction",
-            )
-            st.caption("Off uses the built-in writing template.")
 
         if generate_clicked:
             if not song_brief.strip():
                 st.warning("Add a song idea first.")
             else:
-                _build_direction(song_brief.strip(), use_ai)
+                _build_direction(song_brief.strip())
 
     with context_column:
-        st.markdown("### Song context")
-        st.caption("Used by the AI when available.")
-        st.write("Progression")
-        st.write(get_progression_text())
-        st.write("Key")
-        st.write(get_key_text())
+        show_section_label("Song context")
+        has_chords = bool(st.session_state.progression)
+        show_fact_card(
+            [
+                ("Progression", get_progression_text(), has_chords),
+                ("Key", get_key_text(), has_chords),
+            ]
+        )
+        st.caption("Used by Ghost when available.")
 
-    st.divider()
+    # a divider with nothing after it reads as a section that failed to load
+    if st.session_state.writing_direction:
+        st.divider()
+
     render_direction()
 
 
@@ -327,17 +337,20 @@ def render_lyrics_workspace():
         )
 
     with export_column:
-        st.markdown("### Draft snapshot")
-        st.write("Progression")
-        st.write(get_progression_text())
-        st.write("Key")
-        st.write(get_key_text())
-
-        if st.session_state.writing_direction:
-            st.write("Ghost direction")
-            st.write("Ready to export")
-        else:
-            st.caption("Generate a writing direction on the Ghost tab if needed.")
+        show_section_label("Draft snapshot")
+        has_chords = bool(st.session_state.progression)
+        has_direction = bool(st.session_state.writing_direction)
+        show_fact_card(
+            [
+                ("Progression", get_progression_text(), has_chords),
+                ("Key", get_key_text(), has_chords),
+                (
+                    "Ghost direction",
+                    "Ready to export" if has_direction else "Not generated yet",
+                    has_direction,
+                ),
+            ]
+        )
 
         # export whatever I have so far
         song_draft = build_song_draft_export(
@@ -372,7 +385,7 @@ def render_chords_workspace():
 
     with builder_column:
         # quick options first so I can start fast
-        st.markdown("### Quick start")
+        show_section_label("Quick start")
         starting_key = st.selectbox(
             "Choose a starting key",
             KEY_OPTIONS,
@@ -423,7 +436,7 @@ def render_chords_workspace():
             )
 
     with progression_column:
-        st.markdown("### Current progression")
+        show_section_label("Current progression")
         if st.session_state.progression:
             show_progression_chords(st.session_state.progression)
             st.write("Detected key:", get_key_text())
@@ -449,7 +462,7 @@ def render_chords_workspace():
             # suggestions change when the detected key changes
             suggested_chords = suggest_diatonic_chords(get_detected_key())
             if suggested_chords:
-                st.markdown("### Suggested next chords")
+                show_section_label("Suggested next chords")
                 show_add_chord_buttons(suggested_chords, "suggested_chord")
 
             with st.expander("Remove specific chords"):
@@ -480,4 +493,6 @@ def render_chords_workspace():
                     ]
                     st.rerun()
         else:
-            st.info("Your progression is empty. Add chords from a key or preset.")
+            show_empty_state(
+                "No chords yet. Pick a key or a preset to start the progression."
+            )

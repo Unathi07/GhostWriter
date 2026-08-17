@@ -9,6 +9,7 @@ def initialize_session_state():
         "progression": [],
         "writing_direction": None,
         "writing_direction_context": None,
+        "writing_direction_note": None,
         "song_notes": "",
         "song_brief": "",
         "song_title": "Untitled song",
@@ -16,7 +17,6 @@ def initialize_session_state():
         "last_saved_at": None,
         "pending_load_song_id": None,
         "pending_start_new_song": False,
-        "use_ai_writing_direction": False,
     }
 
     for key, value in defaults.items():
@@ -52,6 +52,7 @@ def load_song_into_session(song):
     st.session_state.progression = song["progression"]
     st.session_state.writing_direction = song["writing_direction"]
     st.session_state.writing_direction_context = song["writing_direction_context"]
+    st.session_state.writing_direction_note = None
     st.session_state.last_saved_at = song["updated_at"]
 
 
@@ -64,4 +65,5 @@ def start_new_song():
     st.session_state.progression = []
     st.session_state.writing_direction = None
     st.session_state.writing_direction_context = None
+    st.session_state.writing_direction_note = None
     st.session_state.last_saved_at = None
