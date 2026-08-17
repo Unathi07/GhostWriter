@@ -1,11 +1,3 @@
-"""Data access for saved songs.
-
-The same code runs on SQLite and Postgres. DATABASE_URL picks the backend:
-tests and local development use a SQLite file, the deployed app uses Postgres.
-Streamlit copies secrets.toml entries into the environment, so setting
-DATABASE_URL in the Streamlit Cloud secrets UI is all the deploy needs.
-"""
-
 import os
 from datetime import datetime
 from functools import lru_cache

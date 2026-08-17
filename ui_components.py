@@ -3,7 +3,7 @@ from pathlib import Path
 import streamlit as st
 
 
-ICON_PATH = Path(__file__).parent / "assets" / "ghostwriter-icon.svg"
+ICON_PATH = Path(__file__).parent / "assets" / "ghostwriter-mark-quaver.svg"
 
 
 def apply_theme():
@@ -20,9 +20,19 @@ def apply_theme():
             --gw-panel-strong: #e5e5ea;
             --gw-border: #d1d1d6;
             --gw-purple: #805ad5;
-            --gw-purple-hover: #6b46c1;
-            --gw-purple-soft: #faf5ff;
+            /* the rgb triplet lets the wash tints below derive from the brand
+               purple itself, instead of a second hardcoded purple */
+            --gw-purple-rgb: 128, 90, 213;
+            /* tint is a surface, ink is for text - one token cannot do both */
+            --gw-purple-tint: #faf5ff;
+            --gw-purple-ink: #6b46c1;
             --gw-white: #ffffff;
+            --gw-sidebar: #f7f7fa;
+
+            /* status colours, same 600-level weight as the brand purple */
+            --gw-danger: #c53030;
+            --gw-warning: #b7791f;
+            --gw-success: #2f855a;
             --gw-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
@@ -65,7 +75,7 @@ def apply_theme():
         }
 
         [data-testid="stSidebar"] {
-            background: #f8f9fa;
+            background: var(--gw-sidebar);
             border-right: 1px solid var(--gw-border);
         }
 
@@ -126,11 +136,11 @@ def apply_theme():
         }
 
         [data-testid="stSidebar"] [role="radiogroup"] label:hover {
-            background: rgba(159, 122, 234, 0.1);
+            background: rgba(var(--gw-purple-rgb), 0.1);
         }
 
         [data-testid="stSidebarNavigation"] ul li:has(input:checked) {
-            background-color: rgba(159, 122, 234, 0.2);
+            background-color: rgba(var(--gw-purple-rgb), 0.2);
         }
 
         .gw-sidebar-context {
@@ -144,7 +154,7 @@ def apply_theme():
         /* little song summary */
         .gw-mini-label {
             margin: 0 0 0.25rem;
-            color: var(--gw-purple-soft);
+            color: var(--gw-purple-ink);
             font-size: 0.65rem;
             font-weight: 600;
             text-transform: uppercase;
@@ -185,7 +195,7 @@ def apply_theme():
 
         .gw-eyebrow {
             margin: 0 0 0.25rem;
-            color: var(--gw-purple-soft);
+            color: var(--gw-purple-ink);
             font-size: 0.7rem;
             font-weight: 600;
             text-transform: uppercase;
@@ -236,8 +246,30 @@ def apply_theme():
         .stButton > button:hover,
         .stDownloadButton > button:hover {
             border-color: var(--gw-purple);
-            color: var(--gw-purple-soft);
-            background: rgba(159, 122, 234, 0.05);
+            color: var(--gw-purple-ink);
+            background: rgba(var(--gw-purple-rgb), 0.05);
+        }
+
+        /* the override above also caught type="primary" buttons, which left the
+           app with no visually primary action - give them the brand purple back */
+        .stButton > button[kind="primary"] {
+            border-color: var(--gw-purple);
+            background: var(--gw-purple);
+            font-weight: 600;
+        }
+
+        /* the blanket "p, label, span, div" colour rule above beats anything set
+           on the button itself, so the label has to be targeted directly */
+        .stButton > button[kind="primary"],
+        .stButton > button[kind="primary"] p,
+        .stButton > button[kind="primary"] div,
+        .stButton > button[kind="primary"] span {
+            color: var(--gw-white);
+        }
+
+        .stButton > button[kind="primary"]:hover {
+            border-color: var(--gw-purple-ink);
+            background: var(--gw-purple-ink);
         }
 
         .stTextInput input,

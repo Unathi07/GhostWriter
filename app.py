@@ -2,7 +2,7 @@ import streamlit as st
 
 from app_state import initialize_session_state
 from database import initialize_database
-from ui_components import apply_theme
+from ui_components import ICON_PATH, apply_theme
 from workspace_views import (
     render_ai_workspace,
     render_chords_workspace,
@@ -14,7 +14,7 @@ from workspace_views import (
 # wide page so the side tabs have space
 st.set_page_config(
     page_title="GhostWriter",
-    page_icon="assets/ghostwriter-icon.svg",
+    page_icon=str(ICON_PATH),
     layout="wide",
     initial_sidebar_state="expanded",
 )
