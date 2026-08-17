@@ -1,0 +1,41 @@
+name: tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # keep this matching the version set in Streamlit Cloud
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Import every module
+        # the test suite does not import ui_components or workspace_views, so a
+        # missing name in either one goes green here and only fails on deploy.
+        # this step is what catches that.
+        run: |
+          python -c "
+          import importlib
+          for module in [
+              'ai_utils', 'app_state', 'chord_utils', 'database', 'export_utils',
+              'music_config', 'piano', 'ui_components', 'workspace_views',
+              'writing_utils',
+          ]:
+              importlib.import_module(module)
+              print('ok', module)
+          "
+
+      - name: Run tests
+        run: python -m pytest -q
