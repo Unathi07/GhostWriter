@@ -7,6 +7,7 @@ from music_config import short_chord_label
 
 
 ICON_PATH = Path(__file__).parent / "assets" / "ghostwriter-mark-quaver.svg"
+USER_ICON_PATH = Path(__file__).parent / "assets" / "ghostwriter-user.svg"
 
 
 def apply_theme():
